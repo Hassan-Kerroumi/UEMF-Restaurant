@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_settings_provider.dart';
 
 class AdminStatsScreen extends StatefulWidget {
   const AdminStatsScreen({super.key});
@@ -13,29 +15,38 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
   
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<AppSettingsProvider>(context);
+    final isDark = settings.isDarkMode;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0e1116),
+      backgroundColor: isDark ? const Color(0xFF0e1116) : const Color(0xFFf5f5f5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1a1f2e),
+        backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Statistics',
           style: TextStyle(
-            color: Color(0xFFc74242),
+            color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
             fontFamily: 'Poppins',
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
           ),
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: Row(
-              children: [
-                _buildPeriodButton('month', 'Month'),
-                const SizedBox(width: 8),
-                _buildPeriodButton('year', 'Year'),
-              ],
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0e1116) : const Color(0xFFf3f4f6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  _buildPeriodButton('month', 'Month', isDark),
+                  _buildPeriodButton('year', 'Year', isDark),
+                ],
+              ),
             ),
           ),
         ],
@@ -47,19 +58,26 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Key Metrics
-              _buildKeyMetrics(),
+              _buildKeyMetrics(isDark),
               const SizedBox(height: 24),
               
               // Revenue Chart
-              _buildRevenueChart(),
+              _buildRevenueChart(isDark),
               const SizedBox(height: 24),
               
               // Most Ordered Items
-              _buildMostOrderedItems(),
+              _buildMostOrderedItems(isDark),
               const SizedBox(height: 24),
               
               // Orders by Time
-              _buildOrdersByTime(),
+              _buildOrdersByTime(isDark),
+              const SizedBox(height: 24),
+
+              // Order Status Distribution (Pie Chart)
+              _buildOrderStatusDistribution(isDark),
+              
+              // Bottom padding for floating nav bar
+              const SizedBox(height: 80),
             ],
           ),
         ),
@@ -67,7 +85,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     );
   }
   
-  Widget _buildPeriodButton(String period, String label) {
+  Widget _buildPeriodButton(String period, String label, bool isDark) {
     final isSelected = timePeriod == period;
     return GestureDetector(
       onTap: () {
@@ -78,18 +96,17 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFc74242) : const Color(0xFF1a1f2e),
+          color: isSelected 
+              ? (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)) 
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected 
-              ? const Color(0xFFc74242).withOpacity(0.2)
-              : Colors.white.withOpacity(0.1),
-          ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : const Color(0xFFf9fafb),
+            color: isSelected 
+                ? Colors.white 
+                : (isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280)),
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w500,
             fontSize: 12,
@@ -99,35 +116,35 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     );
   }
   
-  Widget _buildKeyMetrics() {
+  Widget _buildKeyMetrics(bool isDark) {
     final metrics = [
       {
         'title': 'Total Orders',
         'value': '45',
-        'subtitle': 'Today',
-        'color': const Color(0xFF062c6b),
-        'icon': Icons.shopping_bag,
+        'subtitle': '+12% from yesterday',
+        'color': const Color(0xFF3cad2a),
+        'icon': Icons.shopping_bag_rounded,
       },
       {
         'title': 'Revenue',
         'value': '\$1,245',
-        'subtitle': 'Today',
-        'color': const Color(0xFF3cad2a),
-        'icon': Icons.trending_up,
+        'subtitle': '+8% from yesterday',
+        'color': const Color(0xFF062c6b),
+        'icon': Icons.trending_up_rounded,
       },
       {
         'title': 'Avg Wait Time',
         'value': '15m',
-        'subtitle': 'Average',
-        'color': const Color(0xFFc74242),
-        'icon': Icons.access_time,
+        'subtitle': '-2m from yesterday',
+        'color': const Color(0xFFf59e0b),
+        'icon': Icons.schedule_rounded,
       },
       {
         'title': 'Active Users',
         'value': '42',
-        'subtitle': 'Today',
+        'subtitle': '+5 new users',
         'color': const Color(0xFF8b5cf6),
-        'icon': Icons.people,
+        'icon': Icons.people_rounded,
       },
     ];
     
@@ -138,7 +155,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 1.3,
+        childAspectRatio: 1.4,
       ),
       itemCount: metrics.length,
       itemBuilder: (context, index) {
@@ -146,20 +163,16 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                metric['color'] as Color,
-                (metric['color'] as Color).withOpacity(0.8),
-              ],
+            color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
             ),
-            borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: (metric['color'] as Color).withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+                color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.05),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -168,41 +181,66 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(
-                    metric['icon'] as IconData,
-                    color: Colors.white.withOpacity(0.9),
-                    size: 20,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: (metric['color'] as Color).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      metric['icon'] as IconData,
+                      color: metric['color'] as Color,
+                      size: 20,
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      metric['title'] as String,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontFamily: 'Poppins',
-                        fontSize: 13,
+                  if (index == 0 || index == 1) // Just for demo
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3cad2a).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
                       ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.arrow_upward_rounded, size: 10, color: Color(0xFF3cad2a)),
+                          SizedBox(width: 2),
+                          Text(
+                            '12%',
+                            style: TextStyle(
+                              color: Color(0xFF3cad2a),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    metric['value'] as String,
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
+                      fontFamily: 'Poppins',
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    metric['title'] as String,
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
                     ),
                   ),
                 ],
-              ),
-              Text(
-                metric['value'] as String,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Poppins',
-                  fontSize: 28,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                metric['subtitle'] as String,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.75),
-                  fontFamily: 'Poppins',
-                  fontSize: 11,
-                ),
               ),
             ],
           ),
@@ -211,29 +249,47 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     );
   }
   
-  Widget _buildRevenueChart() {
+  Widget _buildRevenueChart(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1f2e),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Revenue & Customer Trends ($timePeriod)',
-            style: const TextStyle(
-              color: Color(0xFFf9fafb),
+            'Revenue & Customer Trends',
+            style: TextStyle(
+              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
               fontFamily: 'Poppins',
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Comparison with last $timePeriod',
+            style: TextStyle(
+              color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
+              fontFamily: 'Poppins',
+              fontSize: 12,
             ),
           ),
           const SizedBox(height: 24),
           SizedBox(
-            height: 200,
+            height: 220,
             child: LineChart(
               LineChartData(
                 gridData: FlGridData(
@@ -242,7 +298,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                   horizontalInterval: 1,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: Colors.white.withOpacity(0.1),
+                      color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
                       strokeWidth: 1,
                     );
                   },
@@ -267,10 +323,10 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               months[value.toInt()],
-                              style: const TextStyle(
-                                color: Color(0xFF9ca3af),
+                              style: TextStyle(
+                                color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                                 fontFamily: 'Poppins',
-                                fontSize: 10,
+                                fontSize: 11,
                               ),
                             ),
                           );
@@ -285,11 +341,11 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                       reservedSize: 40,
                       getTitlesWidget: (value, meta) {
                         return Text(
-                          '\$${value.toInt()}',
-                          style: const TextStyle(
-                            color: Color(0xFF9ca3af),
+                          '\$${value.toInt()}k',
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                             fontFamily: 'Poppins',
-                            fontSize: 10,
+                            fontSize: 11,
                           ),
                         );
                       },
@@ -313,12 +369,19 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                     ],
                     isCurved: true,
                     color: const Color(0xFF3cad2a),
-                    barWidth: 3,
+                    barWidth: 4,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: const Color(0xFF3cad2a).withOpacity(0.1),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFF3cad2a).withOpacity(0.2),
+                          const Color(0xFF3cad2a).withOpacity(0.0),
+                        ],
+                      ),
                     ),
                   ),
                   LineChartBarData(
@@ -331,14 +394,11 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                       FlSpot(5, 3),
                     ],
                     isCurved: true,
-                    color: const Color(0xFF062c6b),
+                    color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF062c6b),
                     barWidth: 3,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: const Color(0xFF062c6b).withOpacity(0.1),
-                    ),
+                    dashArray: [5, 5],
                   ),
                 ],
               ),
@@ -349,7 +409,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     );
   }
   
-  Widget _buildMostOrderedItems() {
+  Widget _buildMostOrderedItems(bool isDark) {
     final items = [
       {'name': 'Espresso', 'count': 45},
       {'name': 'Cappuccino', 'count': 38},
@@ -359,25 +419,34 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     ];
     
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1f2e),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Most Ordered Items',
             style: TextStyle(
-              color: Color(0xFFf9fafb),
+              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
               fontFamily: 'Poppins',
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           ...items.asMap().entries.map((entry) {
             final index = entry.key;
             final item = entry.value;
@@ -385,23 +454,23 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
             final percentage = (item['count'] as int) / maxCount;
             
             return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: 16),
               child: Row(
                 children: [
                   Container(
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFc74242).withOpacity(0.1),
+                      color: (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
                       child: Text(
                         '${index + 1}',
-                        style: const TextStyle(
-                          color: Color(0xFFc74242),
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                           fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -411,46 +480,50 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          item['name'] as String,
-                          style: const TextStyle(
-                            color: Color(0xFFf9fafb),
-                            fontFamily: 'Poppins',
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
-                              child: Container(
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF9ca3af).withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                                child: FractionallySizedBox(
-                                  widthFactor: percentage,
-                                  alignment: Alignment.centerLeft,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFc74242),
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                  ),
-                                ),
+                            Text(
+                              item['name'] as String,
+                              style: TextStyle(
+                                color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
+                                fontFamily: 'Poppins',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const SizedBox(width: 12),
                             Text(
                               '${item['count']} orders',
-                              style: const TextStyle(
-                                color: Color(0xFF9ca3af),
+                              style: TextStyle(
+                                color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                                 fontFamily: 'Poppins',
                                 fontSize: 12,
                               ),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF0e1116) : const Color(0xFFf3f4f6),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: FractionallySizedBox(
+                            widthFactor: percentage,
+                            alignment: Alignment.centerLeft,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                                    isDark ? const Color(0xFF2d8a20) : const Color(0xFF041e4a),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -464,24 +537,33 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     );
   }
   
-  Widget _buildOrdersByTime() {
+  Widget _buildOrdersByTime(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1f2e),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Orders by Time',
+          Text(
+            'Peak Hours',
             style: TextStyle(
-              color: Color(0xFFf9fafb),
+              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
               fontFamily: 'Poppins',
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 24),
@@ -494,7 +576,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                   drawVerticalLine: false,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: Colors.white.withOpacity(0.1),
+                      color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
                       strokeWidth: 1,
                     );
                   },
@@ -512,16 +594,16 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                       showTitles: true,
                       reservedSize: 30,
                       getTitlesWidget: (value, meta) {
-                        const times = ['8:00', '10:00', '12:00', '14:00', '16:00'];
+                        const times = ['8am', '10am', '12pm', '2pm', '4pm'];
                         if (value.toInt() >= 0 && value.toInt() < times.length) {
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               times[value.toInt()],
-                              style: const TextStyle(
-                                color: Color(0xFF9ca3af),
+                              style: TextStyle(
+                                color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                                 fontFamily: 'Poppins',
-                                fontSize: 10,
+                                fontSize: 11,
                               ),
                             ),
                           );
@@ -537,10 +619,10 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                       getTitlesWidget: (value, meta) {
                         return Text(
                           value.toInt().toString(),
-                          style: const TextStyle(
-                            color: Color(0xFF9ca3af),
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                             fontFamily: 'Poppins',
-                            fontSize: 10,
+                            fontSize: 11,
                           ),
                         );
                       },
@@ -549,48 +631,132 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                 ),
                 borderData: FlBorderData(show: false),
                 barGroups: [
-                  BarChartGroupData(x: 0, barRods: [
-                    BarChartRodData(
-                      toY: 5,
-                      color: const Color(0xFFc74242),
-                      width: 20,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                    )
-                  ]),
-                  BarChartGroupData(x: 1, barRods: [
-                    BarChartRodData(
-                      toY: 8,
-                      color: const Color(0xFFc74242),
-                      width: 20,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                    )
-                  ]),
-                  BarChartGroupData(x: 2, barRods: [
-                    BarChartRodData(
-                      toY: 12,
-                      color: const Color(0xFFc74242),
-                      width: 20,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                    )
-                  ]),
-                  BarChartGroupData(x: 3, barRods: [
-                    BarChartRodData(
-                      toY: 9,
-                      color: const Color(0xFFc74242),
-                      width: 20,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                    )
-                  ]),
-                  BarChartGroupData(x: 4, barRods: [
-                    BarChartRodData(
-                      toY: 6,
-                      color: const Color(0xFFc74242),
-                      width: 20,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                    )
-                  ]),
+                  _makeBarGroup(0, 5, isDark),
+                  _makeBarGroup(1, 8, isDark),
+                  _makeBarGroup(2, 12, isDark),
+                  _makeBarGroup(3, 9, isDark),
+                  _makeBarGroup(4, 6, isDark),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  BarChartGroupData _makeBarGroup(int x, double y, bool isDark) {
+    return BarChartGroupData(x: x, barRods: [
+      BarChartRodData(
+        toY: y,
+        color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+        width: 24,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+        backDrawRodData: BackgroundBarChartRodData(
+          show: true,
+          toY: 15,
+          color: isDark ? const Color(0xFF0e1116) : const Color(0xFFf3f4f6),
+        ),
+      )
+    ]);
+  }
+
+  Widget _buildOrderStatusDistribution(bool isDark) {
+    final statusData = [
+      {'name': 'Pending', 'value': 25.0, 'color': const Color(0xFFf59e0b)},
+      {'name': 'Confirmed', 'value': 35.0, 'color': const Color(0xFF3b82f6)},
+      {'name': 'Paid', 'value': 30.0, 'color': const Color(0xFF3cad2a)},
+      {'name': 'Cancelled', 'value': 10.0, 'color': const Color(0xFFef4444)},
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Order Status',
+            style: TextStyle(
+              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
+              fontFamily: 'Poppins',
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 200,
+            child: Row(
+              children: [
+                Expanded(
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 4,
+                      centerSpaceRadius: 40,
+                      sections: statusData.map((data) {
+                        return PieChartSectionData(
+                          color: data['color'] as Color,
+                          value: data['value'] as double,
+                          title: '${(data['value'] as double).toInt()}%',
+                          radius: 50,
+                          titleStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontFamily: 'Poppins',
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: statusData.map((data) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: data['color'] as Color,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            data['name'] as String,
+                            style: TextStyle(
+                              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
+                              fontSize: 13,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
           ),
         ],

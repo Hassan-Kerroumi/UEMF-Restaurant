@@ -13,6 +13,31 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   String searchQuery = '';
   String? selectedCategory;
   
+  // Mock data moved to state
+  List<Map<String, dynamic>> orders = [
+    {
+      'id': '1',
+      'studentName': 'Ahmed Ali',
+      'status': 'pending',
+      'pickupTime': '12:30',
+      'type': 'dine-in',
+      'items': [
+        {'name': 'Espresso', 'price': 5.0, 'quantity': 2},
+        {'name': 'Croissant', 'price': 3.5, 'quantity': 1},
+      ],
+    },
+    {
+      'id': '2',
+      'studentName': 'Sara Ben',
+      'status': 'accepted',
+      'pickupTime': '13:00',
+      'type': 'pickup',
+      'items': [
+        {'name': 'Cappuccino', 'price': 6.0, 'quantity': 1},
+      ],
+    },
+  ];
+  
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
@@ -26,7 +51,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         title: Text(
           settings.t('ordersOfTheDay'),
           style: TextStyle(
-            color: const Color(0xFFc74242),
+            color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
             fontSize: 20,
             fontWeight: FontWeight.w500,
           ),
@@ -35,7 +60,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           // Language Selector
           PopupMenuButton<String>(
             icon: Icon(
-              Icons.language,
+              Icons.language_rounded,
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
             ),
             tooltip: 'Change Language',
@@ -50,7 +75,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     Text('🇬🇧  English'),
                     if (settings.language == 'en') ...[
                       const Spacer(),
-                      const Icon(Icons.check, color: Color(0xFF3cad2a), size: 20),
+                      const Icon(Icons.check_rounded, color: Color(0xFF3cad2a), size: 20),
                     ],
                   ],
                 ),
@@ -62,7 +87,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     Text('🇫🇷  Français'),
                     if (settings.language == 'fr') ...[
                       const Spacer(),
-                      const Icon(Icons.check, color: Color(0xFF3cad2a), size: 20),
+                      const Icon(Icons.check_rounded, color: Color(0xFF3cad2a), size: 20),
                     ],
                   ],
                 ),
@@ -74,7 +99,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     Text('🇲🇦  العربية'),
                     if (settings.language == 'ar') ...[
                       const Spacer(),
-                      const Icon(Icons.check, color: Color(0xFF3cad2a), size: 20),
+                      const Icon(Icons.check_rounded, color: Color(0xFF3cad2a), size: 20),
                     ],
                   ],
                 ),
@@ -85,7 +110,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           // Theme Toggle
           IconButton(
             icon: Icon(
-              isDark ? Icons.light_mode : Icons.dark_mode,
+              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
             ),
             tooltip: isDark ? 'Light Mode' : 'Dark Mode',
@@ -138,7 +163,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             fontFamily: 'Poppins',
           ),
           prefixIcon: const Icon(
-            Icons.search,
+            Icons.search_rounded,
             color: Color(0xFF9ca3af),
             size: 20,
           ),
@@ -195,12 +220,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: isSelected 
-                        ? const Color(0xFFc74242) 
+                        ? (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b))
                         : (isDark ? const Color(0xFF1a1f2e) : Colors.white),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected 
-                        ? const Color(0xFFc74242).withOpacity(0.2)
+                        ? (isDark ? const Color(0xFF3cad2a).withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.2))
                         : (isDark 
                             ? Colors.white.withOpacity(0.1) 
                             : Colors.black.withOpacity(0.1)),
@@ -234,37 +259,15 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
   
   Widget _buildOrdersList() {
-    // Mock data
-    final orders = [
-      {
-        'id': '1',
-        'studentName': 'Ahmed Ali',
-        'status': 'pending',
-        'pickupTime': '12:30',
-        'type': 'dine-in',
-        'items': [
-          {'name': 'Espresso', 'price': 5.0, 'quantity': 2},
-          {'name': 'Croissant', 'price': 3.5, 'quantity': 1},
-        ],
-      },
-      {
-        'id': '2',
-        'studentName': 'Sara Ben',
-        'status': 'accepted',
-        'pickupTime': '13:00',
-        'type': 'pickup',
-        'items': [
-          {'name': 'Cappuccino', 'price': 6.0, 'quantity': 1},
-        ],
-      },
-    ];
-    
+    final settings = Provider.of<AppSettingsProvider>(context);
+    final isDark = settings.isDarkMode;
+
     return Column(
-      children: orders.map((order) => _buildOrderCard(order)).toList(),
+      children: orders.map((order) => _buildOrderCard(order, isDark)).toList(),
     );
   }
   
-  Widget _buildOrderCard(Map<String, dynamic> order) {
+  Widget _buildOrderCard(Map<String, dynamic> order, bool isDark) {
     final status = order['status'] as String;
     final items = order['items'] as List<Map<String, dynamic>>;
     final totalPrice = items.fold<double>(
@@ -274,11 +277,20 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1f2e),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getStatusColor(status).withOpacity(0.2)),
+        color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,66 +301,121 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.person, color: Color(0xFF9ca3af), size: 18),
-                  const SizedBox(width: 8),
-                  Text(
-                    order['studentName'] as String,
-                    style: const TextStyle(
-                      color: Color(0xFFf9fafb),
-                      fontFamily: 'Poppins',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF0e1116) : const Color(0xFFf3f4f6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF4b5563),
+                      size: 20,
                     ),
                   ),
-                ],
-              ),
-              _buildStatusBadge(status),
-            ],
-          ),
-          const SizedBox(height: 16),
-          
-          // Items
-          ...items.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF9ca3af).withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
+                  const SizedBox(width: 12),
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item['name'] as String,
-                        style: const TextStyle(
-                          color: Color(0xFFf9fafb),
+                        order['studentName'] as String,
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
                           fontFamily: 'Poppins',
-                          fontSize: 14,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
-                        'Qty: ${item['quantity']} × \$${item['price']}',
-                        style: const TextStyle(
-                          color: Color(0xFF9ca3af),
+                        'Order #${order['id']}',
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                           fontFamily: 'Poppins',
                           fontSize: 12,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-          )),
+                ],
+              ),
+              _buildStatusBadge(status),
+            ],
+          ),
+          const SizedBox(height: 20),
           
-          const Divider(color: Color(0xFF9ca3af), height: 24),
+          // Items
+          ...items.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF0e1116) : const Color(0xFFf3f4f6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${item['quantity']}x',
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item['name'] as String,
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
+                            fontFamily: 'Poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          '\$${item['price']}',
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
+                            fontFamily: 'Poppins',
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (status == 'pending')
+                    IconButton(
+                      onPressed: () => _removeItem(order, index),
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      color: const Color(0xFFef4444),
+                      style: IconButton.styleFrom(
+                        backgroundColor: const Color(0xFFef4444).withOpacity(0.1),
+                        padding: const EdgeInsets.all(8),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
+          
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Divider(
+              color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+              height: 1,
+            ),
+          ),
           
           // Footer
           Row(
@@ -356,34 +423,48 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.access_time, color: Color(0xFF9ca3af), size: 14),
-                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.schedule_rounded,
+                    color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
                   Text(
                     order['pickupTime'] as String,
-                    style: const TextStyle(
-                      color: Color(0xFF9ca3af),
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                       fontFamily: 'Poppins',
                       fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 12),
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF4b5563) : const Color(0xFFd1d5db),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
                   Text(
                     order['type'] as String,
-                    style: const TextStyle(
-                      color: Color(0xFF9ca3af),
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                       fontFamily: 'Poppins',
                       fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
               Text(
                 '\$${totalPrice.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  color: Color(0xFFf9fafb),
+                style: TextStyle(
+                  color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                   fontFamily: 'Poppins',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -397,7 +478,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _acceptOrder(order),
-                    icon: const Icon(Icons.check, size: 16),
+                    icon: const Icon(Icons.check_circle_rounded, size: 16),
                     label: const Text('Accept'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3cad2a),
@@ -413,7 +494,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _refuseOrder(order),
-                    icon: const Icon(Icons.close, size: 16),
+                    icon: const Icon(Icons.cancel_rounded, size: 16),
                     label: const Text('Refuse'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFef4444),
@@ -428,7 +509,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 const SizedBox(width: 8),
                 IconButton(
                   onPressed: () => _suggestTime(order),
-                  icon: const Icon(Icons.message),
+                  icon: const Icon(Icons.chat_bubble_rounded),
                   color: const Color(0xFFf9fafb),
                   style: IconButton.styleFrom(
                     backgroundColor: const Color(0xFF1a1f2e),
@@ -478,21 +559,109 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }
   }
   
+  void _removeItem(Map<String, dynamic> order, int index) {
+    setState(() {
+      final items = order['items'] as List<Map<String, dynamic>>;
+      items.removeAt(index);
+      
+      // If no items left, maybe refuse order automatically or just leave empty?
+      // For now, we allow empty orders but you might want to handle this.
+    });
+  }
+
   void _acceptOrder(Map<String, dynamic> order) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Order from ${order['studentName']} accepted'),
-        backgroundColor: const Color(0xFF3cad2a),
-      ),
+    showDialog(
+      context: context,
+      builder: (context) {
+        final settings = Provider.of<AppSettingsProvider>(context, listen: false);
+        final isDark = settings.isDarkMode;
+        
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+          title: Text(
+            'Accept Order',
+            style: TextStyle(
+              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to accept the order from ${order['studentName']}?',
+            style: TextStyle(
+              color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Order from ${order['studentName']} accepted'),
+                    backgroundColor: const Color(0xFF3cad2a),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3cad2a),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Accept'),
+            ),
+          ],
+        );
+      },
     );
   }
   
   void _refuseOrder(Map<String, dynamic> order) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Order from ${order['studentName']} refused'),
-        backgroundColor: const Color(0xFFef4444),
-      ),
+    showDialog(
+      context: context,
+      builder: (context) {
+        final settings = Provider.of<AppSettingsProvider>(context, listen: false);
+        final isDark = settings.isDarkMode;
+        
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+          title: Text(
+            'Refuse Order',
+            style: TextStyle(
+              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to refuse the order from ${order['studentName']}?',
+            style: TextStyle(
+              color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Order from ${order['studentName']} refused'),
+                    backgroundColor: const Color(0xFFef4444),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFef4444),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Refuse'),
+            ),
+          ],
+        );
+      },
     );
   }
   
@@ -650,7 +819,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     child: Row(
                       children: [
                         Icon(
-                          Icons.info_outline,
+                          Icons.info_rounded,
                           color: const Color(0xFF3cad2a).withOpacity(0.7),
                           size: 18,
                         ),
@@ -704,10 +873,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         
                         messageController.dispose();
                       },
-                icon: const Icon(Icons.send, size: 18),
+                icon: const Icon(Icons.send_rounded, size: 18),
                 label: const Text('Send Message'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFc74242),
+                  backgroundColor: Provider.of<AppSettingsProvider>(context, listen: false).isDarkMode ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: const Color(0xFF9ca3af).withOpacity(0.3),
                   disabledForegroundColor: const Color(0xFF9ca3af),

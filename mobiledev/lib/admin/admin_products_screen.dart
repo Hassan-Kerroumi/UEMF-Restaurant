@@ -23,7 +23,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
       'name': 'Espresso',
       'nameFr': 'Espresso',
       'nameAr': 'إسبريسو',
-      'category': 'coffee',
+      'category': 'hot-drinks',
       'price': 5.0,
       'image': 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=400',
     },
@@ -32,7 +32,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
       'name': 'Cappuccino',
       'nameFr': 'Cappuccino',
       'nameAr': 'كابتشينو',
-      'category': 'coffee',
+      'category': 'hot-drinks',
       'price': 6.0,
       'image': 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400',
     },
@@ -65,21 +65,30 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
       backgroundColor: isDark ? const Color(0xFF0e1116) : const Color(0xFFf5f5f5),
       appBar: AppBar(
         backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-        elevation: isDark ? 0 : 1,
+        elevation: 0,
         title: Text(
           settings.t('products'),
-          style: const TextStyle(
-            color: Color(0xFFc74242),
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
+          style: TextStyle(
+            color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Poppins',
           ),
         ),
         actions: [
-          IconButton(
-            onPressed: _addNewProduct,
-            icon: Icon(
-              Icons.add,
-              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: IconButton(
+              onPressed: _addNewProduct,
+              style: IconButton.styleFrom(
+                backgroundColor: isDark ? const Color(0xFF3cad2a).withOpacity(0.1) : const Color(0xFF062c6b).withOpacity(0.1),
+                padding: const EdgeInsets.all(12),
+              ),
+              icon: Icon(
+                Icons.add_circle_rounded,
+                color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                size: 24,
+              ),
             ),
           ),
         ],
@@ -100,6 +109,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
               
               // Products Grid
               _buildProductsGrid(isDark, settings),
+              
+              // Bottom padding for floating nav bar
+              const SizedBox(height: 80),
             ],
           ),
         ),
@@ -111,29 +123,38 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: TextField(
         style: TextStyle(
           color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+          fontFamily: 'Poppins',
         ),
         decoration: InputDecoration(
           hintText: '${settings.t('search')}...',
           hintStyle: const TextStyle(
             color: Color(0xFF9ca3af),
+            fontFamily: 'Poppins',
           ),
           prefixIcon: const Icon(
-            Icons.search,
+            Icons.search_rounded,
             color: Color(0xFF9ca3af),
             size: 20,
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: 12,
+            vertical: 14,
           ),
         ),
         onChanged: (value) {
@@ -156,16 +177,17 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
           style: TextStyle(
             color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
             fontSize: 18,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Poppins',
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         SizedBox(
-          height: 50,
+          height: 44,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: categories.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 8),
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final category = categories[index];
               final isSelected = selectedCategory == category['id'];
@@ -177,24 +199,33 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                     selectedCategory = isSelected ? null : category['id'] as String;
                   });
                 },
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: isSelected 
-                        ? const Color(0xFFc74242) 
+                        ? (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)) 
                         : (isDark ? const Color(0xFF1a1f2e) : Colors.white),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected 
-                        ? const Color(0xFFc74242).withOpacity(0.2)
-                        : (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1)),
+                        ? Colors.transparent
+                        : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
                     ),
+                    boxShadow: [
+                      if (isSelected)
+                        BoxShadow(
+                          color: (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)).withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                    ],
                   ),
                   child: Row(
                     children: [
                       Text(
                         category['icon'] as String,
-                        style: const TextStyle(fontSize: 20),
+                        style: const TextStyle(fontSize: 18),
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -204,6 +235,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                               ? Colors.white 
                               : (isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a)),
                           fontWeight: FontWeight.w500,
+                          fontFamily: 'Poppins',
                         ),
                       ),
                     ],
@@ -249,17 +281,16 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
         ),
         boxShadow: [
-          if (!isDark)
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
       child: Column(
@@ -271,9 +302,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                 height: 120,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF9ca3af).withOpacity(0.2),
+                  color: const Color(0xFF9ca3af).withOpacity(0.1),
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
+                    top: Radius.circular(20),
                   ),
                   image: image != null
                       ? DecorationImage(
@@ -287,7 +318,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                 child: image == null
                     ? Center(
                         child: Icon(
-                          Icons.image,
+                          Icons.fastfood_rounded,
                           size: 40,
                           color: const Color(0xFF9ca3af).withOpacity(0.5),
                         ),
@@ -306,15 +337,22 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: const Icon(
-                          Icons.edit,
+                          Icons.edit_rounded,
                           size: 16,
                           color: Color(0xFF3b82f6),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () => _deleteProduct(product),
                       child: Container(
@@ -322,9 +360,16 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: const Icon(
-                          Icons.delete,
+                          Icons.delete_rounded,
                           size: 16,
                           color: Color(0xFFef4444),
                         ),
@@ -336,44 +381,43 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             ],
           ),
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  product['name'] as String,
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Poppins',
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  (product['category'] as String).toUpperCase(),
+                  style: const TextStyle(
+                    color: Color(0xFF9ca3af),
+                    fontSize: 10,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            product['name'] as String,
-                            style: TextStyle(
-                              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            (product['category'] as String).toUpperCase(),
-                            style: const TextStyle(
-                              color: Color(0xFF9ca3af),
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                     Text(
                       '\$${product['price']}',
-                      style: const TextStyle(
-                        color: Color(0xFFc74242),
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                         fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Poppins',
                       ),
                     ),
                   ],
@@ -391,7 +435,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     final nameFrController = TextEditingController();
     final nameArController = TextEditingController();
     final priceController = TextEditingController();
-    String selectedCat = 'coffee';
+    String selectedCat = 'hot-drinks';
     File? selectedImage;
 
     showDialog(
@@ -403,10 +447,13 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
 
           return AlertDialog(
             backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
               'Add New Product',
               style: TextStyle(
                 color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
               ),
             ),
             content: SingleChildScrollView(
@@ -427,10 +474,10 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                       height: 150,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0e1116) : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12),
+                        color: isDark ? const Color(0xFF0e1116) : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
                         ),
                         image: selectedImage != null
                             ? DecorationImage(
@@ -444,7 +491,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  Icons.add_photo_alternate,
+                                  Icons.add_a_photo_rounded,
                                   size: 40,
                                   color: const Color(0xFF9ca3af).withOpacity(0.5),
                                 ),
@@ -454,6 +501,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                                   style: TextStyle(
                                     color: const Color(0xFF9ca3af).withOpacity(0.8),
                                     fontSize: 12,
+                                    fontFamily: 'Poppins',
                                   ),
                                 ),
                               ],
@@ -461,7 +509,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                           : null,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   
                   _buildTextField('Product Name (English)', nameController, isDark),
                   const SizedBox(height: 12),
@@ -477,9 +525,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF0e1116) : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                        color: isDark ? Colors.white.withOpacity(0.1) : Colors.transparent,
                       ),
                     ),
                     child: DropdownButton<String>(
@@ -488,6 +536,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                       dropdownColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
                       style: TextStyle(
                         color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                        fontFamily: 'Poppins',
                       ),
                       underline: const SizedBox(),
                       items: settings.categories
@@ -512,7 +561,10 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+                ),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -541,10 +593,12 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFc74242),
+                  backgroundColor: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                   foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                child: const Text('Add Product'),
+                child: const Text('Add Product', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
               ),
             ],
           );
@@ -571,10 +625,13 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
 
           return AlertDialog(
             backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
               'Edit Product',
               style: TextStyle(
                 color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
               ),
             ),
             content: SingleChildScrollView(
@@ -595,10 +652,10 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                       height: 150,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0e1116) : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12),
+                        color: isDark ? const Color(0xFF0e1116) : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
                         ),
                         image: newImage != null
                             ? DecorationImage(
@@ -619,7 +676,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  Icons.add_photo_alternate,
+                                  Icons.add_a_photo_rounded,
                                   size: 40,
                                   color: const Color(0xFF9ca3af).withOpacity(0.5),
                                 ),
@@ -629,6 +686,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                                   style: TextStyle(
                                     color: const Color(0xFF9ca3af).withOpacity(0.8),
                                     fontSize: 12,
+                                    fontFamily: 'Poppins',
                                   ),
                                 ),
                               ],
@@ -636,7 +694,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                           : null,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   
                   _buildTextField('Product Name (English)', nameController, isDark),
                   const SizedBox(height: 12),
@@ -652,9 +710,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF0e1116) : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                        color: isDark ? Colors.white.withOpacity(0.1) : Colors.transparent,
                       ),
                     ),
                     child: DropdownButton<String>(
@@ -663,6 +721,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                       dropdownColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
                       style: TextStyle(
                         color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                        fontFamily: 'Poppins',
                       ),
                       underline: const SizedBox(),
                       items: settings.categories
@@ -687,7 +746,10 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+                ),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -711,10 +773,12 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFc74242),
+                  backgroundColor: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                   foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                child: const Text('Save Changes'),
+                child: const Text('Save Changes', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
               ),
             ],
           );
@@ -732,20 +796,26 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
         
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
             'Delete Product',
             style: TextStyle(
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w600,
             ),
           ),
           content: Text(
             'Are you sure you want to delete ${product['name']}?',
-            style: const TextStyle(color: Color(0xFF9ca3af)),
+            style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
@@ -763,8 +833,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFef4444),
                 foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Delete'),
+              child: const Text('Delete', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
             ),
           ],
         );
@@ -778,30 +849,32 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
       keyboardType: keyboardType,
       style: TextStyle(
         color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+        fontFamily: 'Poppins',
       ),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(
           color: Color(0xFF9ca3af),
+          fontFamily: 'Poppins',
         ),
         filled: true,
         fillColor: isDark ? const Color(0xFF0e1116) : Colors.grey[100],
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
-          ),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
-          ),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFc74242)),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+            width: 1.5,
+          ),
         ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }

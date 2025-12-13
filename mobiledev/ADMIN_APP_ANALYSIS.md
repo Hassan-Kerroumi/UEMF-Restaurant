@@ -32,6 +32,24 @@
   - Multi-language support (EN/FR/AR)
   - Price and category management
 
+- [x] **Admin Upcoming Screen**:
+    - [x] Display pre-orders for tomorrow.
+    - [x] Filter by meal type (Breakfast, Lunch, Dinner).
+    - [x] "Add Meal" functionality (with image picker).
+    - [x] Edit/Delete functionality (Edit implemented with dialog).
+    - [x] Theme/Language support.
+
+- [x] **Admin Stats Screen**:
+    - [x] Display key metrics (Total Orders, Revenue, etc.).
+    - [x] Charts (Revenue, Orders by Time).
+    - [x] Pie Chart for Order Status Distribution.
+    - [x] Theme/Language support.
+
+- [x] **Admin Orders Screen**:
+    - [x] List orders by status (Pending, Accepted, Refused, Cancelled).
+    - [x] Accept/Refuse actions with confirmation dialogs.
+    - [x] Theme/Language support.on
+
 ### 4. AdminOrders.tsx
 - **Purpose**: View all orders with status filtering
 - **Key Features**:

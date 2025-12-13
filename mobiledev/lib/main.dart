@@ -35,10 +35,10 @@ class MyApp extends StatelessWidget {
           // Dark theme
           darkTheme: ThemeData(
             brightness: Brightness.dark,
-            primaryColor: const Color(0xFFc74242),
+            primaryColor: const Color(0xFF3cad2a),
             scaffoldBackgroundColor: const Color(0xFF0e1116),
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFc74242),
+              primary: Color(0xFF3cad2a),
               secondary: Color(0xFF3cad2a),
               surface: Color(0xFF1a1f2e),
               onSurface: Color(0xFFf9fafb),
@@ -52,10 +52,10 @@ class MyApp extends StatelessWidget {
           // Light theme
           theme: ThemeData(
             brightness: Brightness.light,
-            primaryColor: const Color(0xFFc74242),
+            primaryColor: const Color(0xFF062c6b),
             scaffoldBackgroundColor: const Color(0xFFf5f5f5),
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFFc74242),
+              primary: Color(0xFF062c6b),
               secondary: Color(0xFF3cad2a),
               surface: Colors.white,
               onSurface: Color(0xFF1a1a1a),
