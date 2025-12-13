@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../admin/admin_main.dart';
+import '../providers/app_settings_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -73,7 +75,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         setState(() {
           _isLoading = false;
         });
-        _showErrorSnackBar('Access denied. Admin privileges required.');
+        final settings = Provider.of<AppSettingsProvider>(context, listen: false);
+        _showErrorSnackBar(settings.t('accessDenied'));
       }
     }
   }
@@ -85,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           children: [
             const Icon(Icons.error_rounded, color: Colors.white),
             const SizedBox(width: 12),
-            Text(message),
+            Expanded(child: Text(message)),
           ],
         ),
         backgroundColor: const Color(0xFFef4444),
@@ -98,6 +101,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<AppSettingsProvider>(context);
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -136,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Sign in to continue',
+                      settings.t('signInContinue'),
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
@@ -156,11 +161,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           children: [
                             _buildTextField(
                               controller: _emailController,
-                              label: 'Email or Username',
+                              label: settings.t('email'),
                               icon: Icons.person_rounded,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Required';
+                                  return settings.t('required');
                                 }
                                 return null;
                               },
@@ -168,12 +173,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             const SizedBox(height: 20),
                             _buildTextField(
                               controller: _passwordController,
-                              label: 'Password',
+                              label: settings.t('password'),
                               icon: Icons.lock_rounded,
                               isPassword: true,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Required';
+                                  return settings.t('required');
                                 }
                                 return null;
                               },
@@ -186,9 +191,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               child: TextButton(
                                 onPressed: () {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Please contact IT support to reset your password.'),
-                                      backgroundColor: Color(0xFF062c6b),
+                                    SnackBar(
+                                      content: Text(settings.t('contactIT')),
+                                      backgroundColor: const Color(0xFF062c6b),
                                     ),
                                   );
                                 },
@@ -197,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   padding: const EdgeInsets.symmetric(horizontal: 8),
                                 ),
                                 child: Text(
-                                  'Forgot Password?',
+                                  settings.t('forgotPassword'),
                                   style: GoogleFonts.poppins(fontSize: 12),
                                 ),
                               ),
@@ -228,7 +233,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                         ),
                                       )
                                     : Text(
-                                        'Sign In',
+                                        settings.t('login'),
                                         style: GoogleFonts.poppins(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -254,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Secured by UEMF IT',
+                          settings.t('securedBy'),
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: Colors.white.withOpacity(0.5),
@@ -286,21 +291,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
-        child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Image.asset(
-              'assets/images/logo.png',
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(
-                  Icons.restaurant_menu_rounded,
-                  size: 40,
-                  color: Colors.white,
-                );
-              },
-            ),
-          ),
+        child: Image.asset(
+          'assets/images/logo.png',
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(
+              Icons.restaurant_menu_rounded,
+              size: 40,
+              color: Colors.white,
+            );
+          },
         ),
+      ),
     );
   }
 
