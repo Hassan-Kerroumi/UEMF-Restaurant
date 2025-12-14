@@ -111,9 +111,9 @@ class CartSheet extends StatelessWidget {
                       controller: controller,
                       itemCount: cart.items.length,
                       itemBuilder: (context, index) {
-                        final item = cart.items[index];
-                        final name = item.product['name'][settings.language];
-                        final price = item.product['price'] as double;
+                        final item = cart.items.values.toList()[index];
+                        final name = item['name'][settings.language];
+                        final price = item['price'] as double;
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 16),
@@ -141,9 +141,11 @@ class CartSheet extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Center(
-                                  child: Text(
-                                    item.product['icon'] ?? '',
-                                    style: const TextStyle(fontSize: 24),
+                                  child: Center(
+                                    child: Text(
+                                      item['icon'] ?? '',
+                                      style: const TextStyle(fontSize: 24),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -165,7 +167,7 @@ class CartSheet extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '\$${(price * item.quantity).toStringAsFixed(2)}',
+                                      '\$${(price * item['quantity']).toStringAsFixed(2)}',
                                       style: const TextStyle(
                                         color: Color(0xFF3cad2a),
                                         fontWeight: FontWeight.w600,
@@ -183,13 +185,13 @@ class CartSheet extends StatelessWidget {
                                       size: 20,
                                     ),
                                     onPressed: () => cart.updateQuantity(
-                                      item.product['id'],
-                                      -1,
+                                      item['id'],
+                                      (item['quantity'] as int) - 1,
                                     ),
                                     color: const Color(0xFF9ca3af),
                                   ),
                                   Text(
-                                    '${item.quantity}',
+                                    '${item['quantity']}',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontFamily: 'Poppins',
@@ -204,8 +206,8 @@ class CartSheet extends StatelessWidget {
                                       size: 20,
                                     ),
                                     onPressed: () => cart.updateQuantity(
-                                      item.product['id'],
-                                      1,
+                                      item['id'],
+                                      (item['quantity'] as int) + 1,
                                     ),
                                     color: const Color(0xFF3cad2a),
                                   ),
