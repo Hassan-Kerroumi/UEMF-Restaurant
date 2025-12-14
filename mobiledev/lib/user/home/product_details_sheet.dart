@@ -44,6 +44,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
+    final isDark = settings.isDarkMode;
     final product = widget.product;
     final name = product['name'][settings.language];
     final double price = product['price'];
@@ -51,37 +52,64 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 20,
+            spreadRadius: 5,
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min, // Wrap content
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF4b5563) : Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Poppins',
+                  color: isDark
+                      ? const Color(0xFFf9fafb)
+                      : const Color(0xFF1a1a1a),
                 ),
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close),
+                icon: Icon(
+                  Icons.close_rounded,
+                  color: isDark
+                      ? const Color(0xFF9ca3af)
+                      : const Color(0xFF6b7280),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // Image / Icon placeholder
           Container(
             height: 150,
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: isDark ? const Color(0xFF0e1116) : const Color(0xFFf3f4f6),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Center(
               child: Text(
@@ -99,7 +127,11 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
             children: [
               Text(
                 settings.t('quantity'),
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(
+                  color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
+                  fontFamily: 'Poppins',
+                  fontSize: 14,
+                ),
               ),
               Row(
                 children: [
@@ -108,19 +140,27 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                       if (_quantity > 1) setState(() => _quantity--);
                     },
                     icon: const Icon(Icons.remove_circle_outline),
-                    color: Colors.grey,
+                    color: const Color(0xFF9ca3af),
                   ),
-                  Text(
-                    '$_quantity',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                  Container(
+                    width: 40,
+                    alignment: Alignment.center,
+                    child: Text(
+                      '$_quantity',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        fontFamily: 'Poppins',
+                        color: isDark
+                            ? const Color(0xFFf9fafb)
+                            : const Color(0xFF1a1a1a),
+                      ),
                     ),
                   ),
                   IconButton(
                     onPressed: () => setState(() => _quantity++),
                     icon: const Icon(Icons.add_circle_outline),
-                    color: Theme.of(context).primaryColor,
+                    color: const Color(0xFF3cad2a),
                   ),
                 ],
               ),
@@ -132,18 +172,42 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
           // Pickup Time
           Text(
             settings.t('pickupTime'),
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            style: TextStyle(
+              color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
+              fontSize: 14,
+              fontFamily: 'Poppins',
+            ),
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _pickupTime,
+            dropdownColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+            style: TextStyle(
+              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+              fontFamily: 'Poppins',
+            ),
             decoration: InputDecoration(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 12,
               ),
+              filled: true,
+              fillColor: isDark ? const Color(0xFF0e1116) : Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.2),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.2),
+                ),
               ),
             ),
             items: _timeSlots
@@ -157,7 +221,14 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
           const SizedBox(height: 16),
 
           // Order Type
-          Text('Type', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+          Text(
+            'Type',
+            style: TextStyle(
+              color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
+              fontSize: 14,
+              fontFamily: 'Poppins',
+            ),
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -168,12 +239,14 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
                       color: _orderType == 'eatin'
-                          ? Theme.of(context).primaryColor
+                          ? const Color(0xFF3cad2a)
                           : Colors.transparent,
                       border: Border.all(
                         color: _orderType == 'eatin'
-                            ? Theme.of(context).primaryColor
-                            : Colors.grey.withOpacity(0.3),
+                            ? const Color(0xFF3cad2a)
+                            : (isDark
+                                  ? Colors.white.withOpacity(0.1)
+                                  : Colors.grey.withOpacity(0.3)),
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -183,8 +256,11 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                       style: TextStyle(
                         color: _orderType == 'eatin'
                             ? Colors.white
-                            : Theme.of(context).textTheme.bodyMedium?.color,
-                        fontWeight: FontWeight.bold,
+                            : (isDark
+                                  ? const Color(0xFFf9fafb)
+                                  : const Color(0xFF1a1a1a)),
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Poppins',
                       ),
                     ),
                   ),
@@ -198,12 +274,14 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
                       color: _orderType == 'takeaway'
-                          ? Theme.of(context).primaryColor
+                          ? const Color(0xFF3cad2a)
                           : Colors.transparent,
                       border: Border.all(
                         color: _orderType == 'takeaway'
-                            ? Theme.of(context).primaryColor
-                            : Colors.grey.withOpacity(0.3),
+                            ? const Color(0xFF3cad2a)
+                            : (isDark
+                                  ? Colors.white.withOpacity(0.1)
+                                  : Colors.grey.withOpacity(0.3)),
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -213,8 +291,11 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                       style: TextStyle(
                         color: _orderType == 'takeaway'
                             ? Colors.white
-                            : Theme.of(context).textTheme.bodyMedium?.color,
-                        fontWeight: FontWeight.bold,
+                            : (isDark
+                                  ? const Color(0xFFf9fafb)
+                                  : const Color(0xFF1a1a1a)),
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Poppins',
                       ),
                     ),
                   ),
@@ -232,15 +313,21 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Total:',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? const Color(0xFF9ca3af) : Colors.grey,
+                      fontFamily: 'Poppins',
+                    ),
                   ),
                   Text(
                     '\$${(price * _quantity).toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: TextStyle(
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
+                      color: const Color(0xFF3cad2a),
+                      fontFamily: 'Poppins',
                     ),
                   ),
                 ],
@@ -256,23 +343,35 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Order added to cart'),
-                      backgroundColor: Theme.of(context).primaryColor,
+                      content: const Text('Order added to cart'),
+                      backgroundColor: const Color(0xFF3cad2a),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
+                  backgroundColor: const Color(0xFF3cad2a),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
-                    vertical: 12,
+                    vertical: 14,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  elevation: 0,
                 ),
-                child: Text(settings.t('confirm')),
+                child: Text(
+                  settings.t('confirm'),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
               ),
             ],
           ),

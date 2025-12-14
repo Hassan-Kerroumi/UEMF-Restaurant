@@ -9,6 +9,7 @@ class CartSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
+    final isDark = settings.isDarkMode;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
@@ -17,17 +18,17 @@ class CartSheet extends StatelessWidget {
       builder: (_, controller) {
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
+                blurRadius: 20,
                 spreadRadius: 5,
               ),
             ],
           ),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -35,9 +36,9 @@ class CartSheet extends StatelessWidget {
                 child: Container(
                   width: 40,
                   height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
+                  margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
-                    color: Colors.grey[600],
+                    color: isDark ? const Color(0xFF4b5563) : Colors.grey[300],
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -47,17 +48,34 @@ class CartSheet extends StatelessWidget {
                 children: [
                   Text(
                     'My Order',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    style: TextStyle(
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                      color: isDark
+                          ? const Color(0xFFf9fafb)
+                          : const Color(0xFF1a1a1a),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: isDark
+                          ? const Color(0xFF9ca3af)
+                          : const Color(0xFF6b7280),
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
-              const Divider(),
+              const SizedBox(height: 20),
+              Divider(
+                color: isDark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05),
+                height: 1,
+              ),
+              const SizedBox(height: 20),
               Expanded(
                 child: Consumer<CartProvider>(
                   builder: (context, cart, child) {
@@ -69,14 +87,19 @@ class CartSheet extends StatelessWidget {
                             Icon(
                               Icons.shopping_basket_outlined,
                               size: 64,
-                              color: Colors.grey[400],
+                              color: isDark
+                                  ? const Color(0xFF1a1f2e)
+                                  : Colors.grey[200],
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'Your cart is empty',
                               style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 18,
+                                color: isDark
+                                    ? const Color(0xFF9ca3af)
+                                    : Colors.grey[400],
+                                fontSize: 16,
+                                fontFamily: 'Poppins',
                               ),
                             ),
                           ],
@@ -93,13 +116,17 @@ class CartSheet extends StatelessWidget {
                         final price = item.product['price'] as double;
 
                         return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(12),
+                            color: isDark
+                                ? const Color(0xFF0e1116)
+                                : const Color(0xFFf9fafb),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: Colors.grey.withOpacity(0.1),
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.05)
+                                  : Colors.transparent,
                             ),
                           ),
                           child: Row(
@@ -108,8 +135,10 @@ class CartSheet extends StatelessWidget {
                                 width: 60,
                                 height: 60,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: isDark
+                                      ? const Color(0xFF1a1f2e)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Center(
                                   child: Text(
@@ -118,23 +147,29 @@ class CartSheet extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       name,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
                                         fontSize: 16,
+                                        fontFamily: 'Poppins',
+                                        color: isDark
+                                            ? const Color(0xFFf9fafb)
+                                            : const Color(0xFF1a1a1a),
                                       ),
                                     ),
+                                    const SizedBox(height: 4),
                                     Text(
                                       '\$${(price * item.quantity).toStringAsFixed(2)}',
-                                      style: TextStyle(
-                                        color: Theme.of(context).primaryColor,
+                                      style: const TextStyle(
+                                        color: Color(0xFF3cad2a),
                                         fontWeight: FontWeight.w600,
+                                        fontFamily: 'Poppins',
                                       ),
                                     ),
                                   ],
@@ -151,12 +186,16 @@ class CartSheet extends StatelessWidget {
                                       item.product['id'],
                                       -1,
                                     ),
-                                    color: Colors.grey,
+                                    color: const Color(0xFF9ca3af),
                                   ),
                                   Text(
                                     '${item.quantity}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins',
+                                      color: isDark
+                                          ? const Color(0xFFf9fafb)
+                                          : const Color(0xFF1a1a1a),
                                     ),
                                   ),
                                   IconButton(
@@ -168,7 +207,7 @@ class CartSheet extends StatelessWidget {
                                       item.product['id'],
                                       1,
                                     ),
-                                    color: Theme.of(context).primaryColor,
+                                    color: const Color(0xFF3cad2a),
                                   ),
                                 ],
                               ),
@@ -180,7 +219,14 @@ class CartSheet extends StatelessWidget {
                   },
                 ),
               ),
-              const Divider(),
+              const SizedBox(height: 20),
+              Divider(
+                color: isDark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05),
+                height: 1,
+              ),
+              const SizedBox(height: 20),
               Consumer<CartProvider>(
                 builder: (context, cart, _) {
                   if (cart.items.isEmpty) return const SizedBox.shrink();
@@ -190,19 +236,24 @@ class CartSheet extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Total',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
+                              color: isDark
+                                  ? const Color(0xFFf9fafb)
+                                  : const Color(0xFF1a1a1a),
                             ),
                           ),
                           Text(
                             '\$${cart.totalPrice.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 18,
+                            style: const TextStyle(
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
+                              color: Color(0xFF3cad2a),
+                              fontFamily: 'Poppins',
                             ),
                           ),
                         ],
@@ -210,23 +261,28 @@ class CartSheet extends StatelessWidget {
                       const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
-                        height: 50,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
+                            backgroundColor: const Color(0xFF3cad2a),
                             foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                             ),
+                            elevation: 0,
                           ),
                           onPressed: () {
                             // Mock Order Confirmation
                             cart.clearCart();
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Order Confirmed!'),
-                                backgroundColor: Colors.green,
+                              SnackBar(
+                                content: const Text('Order Confirmed!'),
+                                backgroundColor: const Color(0xFF3cad2a),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                             );
                           },
@@ -235,6 +291,7 @@ class CartSheet extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
                             ),
                           ),
                         ),

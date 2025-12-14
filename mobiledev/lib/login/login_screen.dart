@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../admin/admin_main.dart';
+import '../user/user_main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,11 +10,12 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _isPasswordVisible = false;
   bool _isLoading = false;
   late AnimationController _animController;
@@ -26,9 +28,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOut),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
     _animController.forward();
   }
 
@@ -53,47 +56,39 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     await Future.delayed(const Duration(seconds: 1));
 
     final email = _emailController.text.toLowerCase().trim();
-    
+
     // Check if email/username contains "admin"
     // In production, this would be a backend call
     if (email.contains('admin')) {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const AdminMain(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const AdminMain(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
             transitionDuration: const Duration(milliseconds: 500),
           ),
         );
       }
     } else {
+      // Allow any other input to access the User App
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        _showErrorSnackBar('Access denied. Admin privileges required.');
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const UserMain(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+            transitionDuration: const Duration(milliseconds: 500),
+          ),
+        );
       }
     }
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error_rounded, color: Colors.white),
-            const SizedBox(width: 12),
-            Text(message),
-          ],
-        ),
-        backgroundColor: const Color(0xFFef4444),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
   }
 
   @override
@@ -122,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     // Logo Section
                     _buildLogo(),
                     const SizedBox(height: 32),
-                    
+
                     // Welcome Text
                     Text(
                       'UEMF Restaurant',
@@ -179,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               },
                             ),
                             const SizedBox(height: 12),
-                            
+
                             // Forgot Password
                             Align(
                               alignment: Alignment.centerRight,
@@ -187,14 +182,20 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 onPressed: () {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Please contact IT support to reset your password.'),
+                                      content: Text(
+                                        'Please contact IT support to reset your password.',
+                                      ),
                                       backgroundColor: Color(0xFF062c6b),
                                     ),
                                   );
                                 },
                                 style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white.withOpacity(0.8),
-                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  foregroundColor: Colors.white.withOpacity(
+                                    0.8,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
                                 ),
                                 child: Text(
                                   'Forgot Password?',
@@ -216,7 +217,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
                                 ),
                                 child: _isLoading
                                     ? const SizedBox(
@@ -240,9 +243,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 48),
-                    
+
                     // Footer
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -267,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               ),
             ),
           ),
-          ),
+        ),
       ),
     );
   }
@@ -279,28 +282,25 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
         child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Image.asset(
-              'assets/images/logo.png',
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(
-                  Icons.restaurant_menu_rounded,
-                  size: 40,
-                  color: Colors.white,
-                );
-              },
-            ),
+          padding: const EdgeInsets.all(24.0),
+          child: Image.asset(
+            'assets/images/logo.png',
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(
+                Icons.restaurant_menu_rounded,
+                size: 40,
+                color: Colors.white,
+              );
+            },
           ),
         ),
+      ),
     );
   }
 
@@ -323,7 +323,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
-                  _isPasswordVisible ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                  _isPasswordVisible
+                      ? Icons.visibility_off_rounded
+                      : Icons.visibility_rounded,
                   color: Colors.white.withOpacity(0.7),
                   size: 20,
                 ),
@@ -352,7 +354,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Color(0xFFef4444), width: 1),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 20,
+        ),
       ),
     );
   }

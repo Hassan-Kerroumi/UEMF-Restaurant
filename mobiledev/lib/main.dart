@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'providers/app_settings_provider.dart';
+import 'providers/cart_provider.dart';
 import 'login/login_screen.dart';
 
 void main() {
@@ -14,8 +15,11 @@ void main() {
     ),
   );
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AppSettingsProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppSettingsProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -65,7 +69,9 @@ class MyApp extends StatelessWidget {
               elevation: 1,
               iconTheme: IconThemeData(color: Color(0xFF1a1a1a)),
             ),
-            textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme),
+            textTheme: GoogleFonts.poppinsTextTheme(
+              ThemeData.light().textTheme,
+            ),
           ),
           home: const LoginScreen(),
         );
