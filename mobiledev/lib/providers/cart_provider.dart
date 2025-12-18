@@ -53,6 +53,51 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
+  // History
+  final List<Map<String, dynamic>> _history = [];
+  List<Map<String, dynamic>> get history => _history;
+
+  void confirmOrder() {
+    if (_items.isEmpty) return;
+
+    _history.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'date': DateTime.now(),
+      'items': Map<String, dynamic>.from(_items),
+      'total': totalPrice,
+      'status': 'Pending', // Pending, Completed, Cancelled
+    });
+
+    _items.clear();
+    notifyListeners();
+  }
+
+  void cancelOrder(String orderId) {
+    final index = _history.indexWhere((element) => element['id'] == orderId);
+    if (index != -1) {
+      _history[index]['status'] = 'Cancelled';
+      notifyListeners();
+    }
+  }
+
+  void restoreOrderToCart(String orderId) {
+    final index = _history.indexWhere((element) => element['id'] == orderId);
+    if (index != -1) {
+      final order = _history[index];
+      final itemsMap = order['items'] as Map<String, dynamic>;
+
+      // Clear current cart first? Or merge? Usually edit implies replacing current context.
+      // Let's clear current cart to be safe and load this order.
+      _items.clear();
+      _items.addAll(itemsMap);
+
+      // Remove from history since it's now back in cart (or mark as cancelled/edited)
+      _history.removeAt(index);
+
+      notifyListeners();
+    }
+  }
+
   void clearCart() {
     _items.clear();
     notifyListeners();

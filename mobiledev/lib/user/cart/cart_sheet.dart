@@ -275,7 +275,8 @@ class CartSheet extends StatelessWidget {
                           ),
                           onPressed: () {
                             // Mock Order Confirmation
-                            cart.clearCart();
+                            // Mock Order Confirmation
+                            cart.confirmOrder();
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
