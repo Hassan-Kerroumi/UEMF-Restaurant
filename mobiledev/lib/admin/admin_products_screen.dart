@@ -223,9 +223,12 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   ),
                   child: Row(
                     children: [
-                      Text(
-                        category['icon'] as String,
-                        style: const TextStyle(fontSize: 18),
+                      Icon(
+                        category['icon'] as IconData,
+                        size: 20,
+                        color: isSelected 
+                            ? Colors.white 
+                            : (isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a)),
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -381,7 +384,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             ],
           ),
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -449,7 +452,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
-              'Add New Product',
+              settings.t('addNewProduct'),
               style: TextStyle(
                 color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
                 fontFamily: 'Poppins',
@@ -497,7 +500,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Tap to add image',
+                                  settings.t('uploadImage'),
                                   style: TextStyle(
                                     color: const Color(0xFF9ca3af).withOpacity(0.8),
                                     fontSize: 12,
@@ -511,13 +514,13 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   ),
                   const SizedBox(height: 20),
                   
-                  _buildTextField('Product Name (English)', nameController, isDark),
+                  _buildTextField('${settings.t('productName')} (English)', nameController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Product Name (French)', nameFrController, isDark),
+                  _buildTextField('${settings.t('productName')} (French)', nameFrController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Product Name (Arabic)', nameArController, isDark),
+                  _buildTextField('${settings.t('productName')} (Arabic)', nameArController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Price', priceController, isDark, keyboardType: TextInputType.number),
+                  _buildTextField(settings.t('price'), priceController, isDark, keyboardType: TextInputType.number),
                   const SizedBox(height: 12),
                   
                   // Category Dropdown
@@ -561,9 +564,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+                child: Text(
+                  settings.t('cancel'),
+                  style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
                 ),
               ),
               ElevatedButton(
@@ -586,9 +589,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Product added successfully'),
-                      backgroundColor: Color(0xFF3cad2a),
+                    SnackBar(
+                      content: Text(settings.t('productAdded')),
+                      backgroundColor: const Color(0xFF3cad2a),
                     ),
                   );
                 },
@@ -598,7 +601,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                child: const Text('Add Product', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+                child: Text(settings.t('save'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
               ),
             ],
           );
@@ -627,7 +630,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
-              'Edit Product',
+              settings.t('editProduct'),
               style: TextStyle(
                 color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
                 fontFamily: 'Poppins',
@@ -682,7 +685,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Tap to change image',
+                                  settings.t('uploadImage'),
                                   style: TextStyle(
                                     color: const Color(0xFF9ca3af).withOpacity(0.8),
                                     fontSize: 12,
@@ -696,13 +699,13 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   ),
                   const SizedBox(height: 20),
                   
-                  _buildTextField('Product Name (English)', nameController, isDark),
+                  _buildTextField('${settings.t('productName')} (English)', nameController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Product Name (French)', nameFrController, isDark),
+                  _buildTextField('${settings.t('productName')} (French)', nameFrController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Product Name (Arabic)', nameArController, isDark),
+                  _buildTextField('${settings.t('productName')} (Arabic)', nameArController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Price', priceController, isDark, keyboardType: TextInputType.number),
+                  _buildTextField(settings.t('price'), priceController, isDark, keyboardType: TextInputType.number),
                   const SizedBox(height: 12),
                   
                   // Category Dropdown
@@ -746,9 +749,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+                child: Text(
+                  settings.t('cancel'),
+                  style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
                 ),
               ),
               ElevatedButton(
@@ -766,9 +769,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Product updated successfully'),
-                      backgroundColor: Color(0xFF3cad2a),
+                    SnackBar(
+                      content: Text(settings.t('productUpdated')),
+                      backgroundColor: const Color(0xFF3cad2a),
                     ),
                   );
                 },
@@ -778,7 +781,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                child: const Text('Save Changes', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+                child: Text(settings.t('save'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
               ),
             ],
           );
@@ -798,7 +801,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
           backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
-            'Delete Product',
+            settings.t('delete'),
             style: TextStyle(
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
               fontFamily: 'Poppins',
@@ -806,15 +809,15 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             ),
           ),
           content: Text(
-            'Are you sure you want to delete ${product['name']}?',
+            settings.t('deleteConfirmation'),
             style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+              child: Text(
+                settings.t('cancel'),
+                style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
               ),
             ),
             ElevatedButton(
@@ -825,7 +828,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('${product['name']} deleted'),
+                    content: Text('${product['name']} ${settings.t('productDeleted')}'),
                     backgroundColor: const Color(0xFFef4444),
                   ),
                 );
@@ -835,7 +838,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Delete', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+              child: Text(settings.t('delete'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
             ),
           ],
         );

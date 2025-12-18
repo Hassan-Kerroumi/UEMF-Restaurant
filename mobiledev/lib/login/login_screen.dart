@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../admin/admin_main.dart';
+<<<<<<< HEAD
 import '../user/user_main.dart';
+=======
+import '../providers/app_settings_provider.dart';
+>>>>>>> 4145b501262ac1e48c03905ae027e812185cc021
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -77,6 +82,7 @@ class _LoginScreenState extends State<LoginScreen>
     } else {
       // Allow any other input to access the User App
       if (mounted) {
+<<<<<<< HEAD
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
@@ -88,12 +94,42 @@ class _LoginScreenState extends State<LoginScreen>
             transitionDuration: const Duration(milliseconds: 500),
           ),
         );
+=======
+        setState(() {
+          _isLoading = false;
+        });
+        final settings = Provider.of<AppSettingsProvider>(context, listen: false);
+        _showErrorSnackBar(settings.t('accessDenied'));
+>>>>>>> 4145b501262ac1e48c03905ae027e812185cc021
       }
     }
   }
 
+<<<<<<< HEAD
+=======
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_rounded, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: const Color(0xFFef4444),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+>>>>>>> 4145b501262ac1e48c03905ae027e812185cc021
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<AppSettingsProvider>(context);
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -132,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Sign in to continue',
+                      settings.t('signInContinue'),
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
@@ -152,11 +188,11 @@ class _LoginScreenState extends State<LoginScreen>
                           children: [
                             _buildTextField(
                               controller: _emailController,
-                              label: 'Email or Username',
+                              label: settings.t('email'),
                               icon: Icons.person_rounded,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Required';
+                                  return settings.t('required');
                                 }
                                 return null;
                               },
@@ -164,12 +200,12 @@ class _LoginScreenState extends State<LoginScreen>
                             const SizedBox(height: 20),
                             _buildTextField(
                               controller: _passwordController,
-                              label: 'Password',
+                              label: settings.t('password'),
                               icon: Icons.lock_rounded,
                               isPassword: true,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Required';
+                                  return settings.t('required');
                                 }
                                 return null;
                               },
@@ -182,11 +218,17 @@ class _LoginScreenState extends State<LoginScreen>
                               child: TextButton(
                                 onPressed: () {
                                   ScaffoldMessenger.of(context).showSnackBar(
+<<<<<<< HEAD
                                     const SnackBar(
                                       content: Text(
                                         'Please contact IT support to reset your password.',
                                       ),
                                       backgroundColor: Color(0xFF062c6b),
+=======
+                                    SnackBar(
+                                      content: Text(settings.t('contactIT')),
+                                      backgroundColor: const Color(0xFF062c6b),
+>>>>>>> 4145b501262ac1e48c03905ae027e812185cc021
                                     ),
                                   );
                                 },
@@ -199,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
                                 ),
                                 child: Text(
-                                  'Forgot Password?',
+                                  settings.t('forgotPassword'),
                                   style: GoogleFonts.poppins(fontSize: 12),
                                 ),
                               ),
@@ -232,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         ),
                                       )
                                     : Text(
-                                        'Sign In',
+                                        settings.t('login'),
                                         style: GoogleFonts.poppins(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -258,7 +300,7 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Secured by UEMF IT',
+                          settings.t('securedBy'),
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: Colors.white.withOpacity(0.5),
@@ -287,6 +329,7 @@ class _LoginScreenState extends State<LoginScreen>
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
+<<<<<<< HEAD
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Image.asset(
@@ -300,6 +343,18 @@ class _LoginScreenState extends State<LoginScreen>
               );
             },
           ),
+=======
+        child: Image.asset(
+          'assets/images/logo.png',
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(
+              Icons.restaurant_menu_rounded,
+              size: 40,
+              color: Colors.white,
+            );
+          },
+>>>>>>> 4145b501262ac1e48c03905ae027e812185cc021
         ),
       ),
     );

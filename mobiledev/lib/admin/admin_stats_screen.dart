@@ -12,6 +12,7 @@ class AdminStatsScreen extends StatefulWidget {
 
 class _AdminStatsScreenState extends State<AdminStatsScreen> {
   String timePeriod = 'month';
+  bool _showAllItems = false;
   
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
         backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
         elevation: 0,
         title: Text(
-          'Statistics',
+          settings.t('statistics'),
           style: TextStyle(
             color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
             fontSize: 24,
@@ -43,8 +44,8 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
               ),
               child: Row(
                 children: [
-                  _buildPeriodButton('month', 'Month', isDark),
-                  _buildPeriodButton('year', 'Year', isDark),
+                  _buildPeriodButton('month', settings.t('month'), isDark),
+                  _buildPeriodButton('year', settings.t('year'), isDark),
                 ],
               ),
             ),
@@ -58,23 +59,25 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Key Metrics
-              _buildKeyMetrics(isDark),
+              _buildKeyMetrics(isDark, settings),
               const SizedBox(height: 24),
               
               // Revenue Chart
-              _buildRevenueChart(isDark),
+              _buildRevenueChart(isDark, settings),
               const SizedBox(height: 24),
               
-              // Most Ordered Items
-              _buildMostOrderedItems(isDark),
-              const SizedBox(height: 24),
-              
-              // Orders by Time
-              _buildOrdersByTime(isDark),
-              const SizedBox(height: 24),
+              if (timePeriod != 'year') ...[
+                // Most Ordered Items
+                _buildMostOrderedItems(isDark, settings),
+                const SizedBox(height: 24),
+                
+                // Orders by Time
+                _buildOrdersByTime(isDark, settings),
+                const SizedBox(height: 24),
 
-              // Order Status Distribution (Pie Chart)
-              _buildOrderStatusDistribution(isDark),
+                // Order Status Distribution (Pie Chart)
+                _buildOrderStatusDistribution(isDark, settings),
+              ],
               
               // Bottom padding for floating nav bar
               const SizedBox(height: 80),
@@ -116,33 +119,34 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     );
   }
   
-  Widget _buildKeyMetrics(bool isDark) {
+  Widget _buildKeyMetrics(bool isDark, AppSettingsProvider settings) {
+    final isYear = timePeriod == 'year';
     final metrics = [
       {
-        'title': 'Total Orders',
-        'value': '45',
-        'subtitle': '+12% from yesterday',
+        'title': settings.t('totalOrders'),
+        'value': isYear ? '15,420' : '45',
+        'subtitle': isYear ? '+15% ${settings.t('comparisonWithLast')} ${settings.t('year')}' : '+12% ${settings.t('fromYesterday')}',
         'color': const Color(0xFF3cad2a),
         'icon': Icons.shopping_bag_rounded,
       },
       {
-        'title': 'Revenue',
-        'value': '\$1,245',
-        'subtitle': '+8% from yesterday',
+        'title': settings.t('revenue'),
+        'value': isYear ? '\$452,000' : '\$1,245',
+        'subtitle': isYear ? '+22% ${settings.t('comparisonWithLast')} ${settings.t('year')}' : '+8% ${settings.t('fromYesterday')}',
         'color': const Color(0xFF062c6b),
         'icon': Icons.trending_up_rounded,
       },
       {
-        'title': 'Avg Wait Time',
-        'value': '15m',
-        'subtitle': '-2m from yesterday',
+        'title': settings.t('avgWaitTime'),
+        'value': isYear ? '18m' : '15m',
+        'subtitle': isYear ? '-1m ${settings.t('comparisonWithLast')} ${settings.t('year')}' : '-2m ${settings.t('fromYesterday')}',
         'color': const Color(0xFFf59e0b),
         'icon': Icons.schedule_rounded,
       },
       {
-        'title': 'Active Users',
-        'value': '42',
-        'subtitle': '+5 new users',
+        'title': settings.t('activeUsers'),
+        'value': isYear ? '1,250' : '42',
+        'subtitle': isYear ? '+120 ${settings.t('newUsers')}' : '+5 ${settings.t('newUsers')}',
         'color': const Color(0xFF8b5cf6),
         'icon': Icons.people_rounded,
       },
@@ -202,13 +206,13 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                         color: const Color(0xFF3cad2a).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.arrow_upward_rounded, size: 10, color: Color(0xFF3cad2a)),
-                          SizedBox(width: 2),
+                          const Icon(Icons.arrow_upward_rounded, size: 10, color: Color(0xFF3cad2a)),
+                          const SizedBox(width: 2),
                           Text(
-                            '12%',
-                            style: TextStyle(
+                            isYear ? '15%' : '12%',
+                            style: const TextStyle(
                               color: Color(0xFF3cad2a),
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -249,7 +253,8 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     );
   }
   
-  Widget _buildRevenueChart(bool isDark) {
+  Widget _buildRevenueChart(bool isDark, AppSettingsProvider settings) {
+    final isYear = timePeriod == 'year';
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -270,7 +275,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Revenue & Customer Trends',
+            settings.t('revenueTrends'),
             style: TextStyle(
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
               fontFamily: 'Poppins',
@@ -280,12 +285,60 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Comparison with last $timePeriod',
+            '${settings.t('comparison')} ${settings.t(timePeriod)}',
             style: TextStyle(
               color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
               fontFamily: 'Poppins',
               fontSize: 12,
             ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF3cad2a),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    settings.t('revenue'),
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 16),
+              Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF062c6b),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    settings.t('customers'),
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           const SizedBox(height: 24),
           SizedBox(
@@ -295,7 +348,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: 1,
+                  horizontalInterval: isYear ? 100 : 1,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
                       color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
@@ -317,19 +370,36 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                       reservedSize: 30,
                       interval: 1,
                       getTitlesWidget: (value, meta) {
-                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-                        if (value.toInt() >= 0 && value.toInt() < months.length) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              months[value.toInt()],
-                              style: TextStyle(
-                                color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
-                                fontFamily: 'Poppins',
-                                fontSize: 11,
+                        if (isYear) {
+                          const years = ['2021', '2022', '2023', '2024', '2025'];
+                          if (value.toInt() >= 0 && value.toInt() < years.length) {
+                             return Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                years[value.toInt()],
+                                style: TextStyle(
+                                  color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
+                                  fontFamily: 'Poppins',
+                                  fontSize: 11,
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }
+                        } else {
+                          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                          if (value.toInt() >= 0 && value.toInt() < months.length) {
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                months[value.toInt()],
+                                style: TextStyle(
+                                  color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
+                                  fontFamily: 'Poppins',
+                                  fontSize: 11,
+                                ),
+                              ),
+                            );
+                          }
                         }
                         return const Text('');
                       },
@@ -354,19 +424,27 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
-                maxX: 5,
+                maxX: isYear ? 4 : 5,
                 minY: 0,
-                maxY: 6,
+                maxY: isYear ? 500 : 6,
                 lineBarsData: [
                   LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 3),
-                      FlSpot(1, 2.5),
-                      FlSpot(2, 4),
-                      FlSpot(3, 3.8),
-                      FlSpot(4, 5),
-                      FlSpot(5, 4.5),
-                    ],
+                    spots: isYear 
+                      ? const [
+                          FlSpot(0, 250),
+                          FlSpot(1, 320),
+                          FlSpot(2, 380),
+                          FlSpot(3, 420),
+                          FlSpot(4, 452),
+                        ]
+                      : const [
+                          FlSpot(0, 3),
+                          FlSpot(1, 2.5),
+                          FlSpot(2, 4),
+                          FlSpot(3, 3.8),
+                          FlSpot(4, 5),
+                          FlSpot(5, 4.5),
+                        ],
                     isCurved: true,
                     color: const Color(0xFF3cad2a),
                     barWidth: 4,
@@ -385,14 +463,22 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                     ),
                   ),
                   LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 2),
-                      FlSpot(1, 1.8),
-                      FlSpot(2, 2.5),
-                      FlSpot(3, 2.3),
-                      FlSpot(4, 3.5),
-                      FlSpot(5, 3),
-                    ],
+                    spots: isYear
+                      ? const [
+                          FlSpot(0, 180),
+                          FlSpot(1, 240),
+                          FlSpot(2, 290),
+                          FlSpot(3, 340),
+                          FlSpot(4, 390),
+                        ]
+                      : const [
+                          FlSpot(0, 2),
+                          FlSpot(1, 1.8),
+                          FlSpot(2, 2.5),
+                          FlSpot(3, 2.3),
+                          FlSpot(4, 3.5),
+                          FlSpot(5, 3),
+                        ],
                     isCurved: true,
                     color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF062c6b),
                     barWidth: 3,
@@ -409,14 +495,21 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     );
   }
   
-  Widget _buildMostOrderedItems(bool isDark) {
-    final items = [
+  Widget _buildMostOrderedItems(bool isDark, AppSettingsProvider settings) {
+    final allItems = [
       {'name': 'Espresso', 'count': 45},
       {'name': 'Cappuccino', 'count': 38},
       {'name': 'Croissant', 'count': 32},
       {'name': 'Sandwich', 'count': 28},
       {'name': 'Latte', 'count': 25},
+      {'name': 'Muffin', 'count': 20},
+      {'name': 'Tea', 'count': 18},
+      {'name': 'Bagel', 'count': 15},
+      {'name': 'Juice', 'count': 12},
+      {'name': 'Cookie', 'count': 10},
     ];
+
+    final items = _showAllItems ? allItems : allItems.take(5).toList();
     
     return Container(
       padding: const EdgeInsets.all(20),
@@ -438,7 +531,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Most Ordered Items',
+            settings.t('mostOrderedItems'),
             style: TextStyle(
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
               fontFamily: 'Poppins',
@@ -450,7 +543,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
           ...items.asMap().entries.map((entry) {
             final index = entry.key;
             final item = entry.value;
-            final maxCount = items[0]['count'] as int;
+            final maxCount = allItems[0]['count'] as int;
             final percentage = (item['count'] as int) / maxCount;
             
             return Padding(
@@ -493,7 +586,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                               ),
                             ),
                             Text(
-                              '${item['count']} orders',
+                              '${item['count']} ${settings.t('orders')}',
                               style: TextStyle(
                                 color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                                 fontFamily: 'Poppins',
@@ -532,12 +625,59 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
               ),
             );
           }),
+          Center(
+            child: TextButton(
+              onPressed: () {
+                setState(() {
+                  _showAllItems = !_showAllItems;
+                });
+              },
+              child: Text(
+                _showAllItems ? settings.t('showLess') : settings.t('showMore'),
+                style: TextStyle(
+                  color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
   
-  Widget _buildOrdersByTime(bool isDark) {
+  Widget _buildOrdersByTime(bool isDark, AppSettingsProvider settings) {
+    final hourlyData = [
+      {'hour': 8, 'orders': 5},
+      {'hour': 9, 'orders': 12},
+      {'hour': 10, 'orders': 25},
+      {'hour': 11, 'orders': 18},
+      {'hour': 12, 'orders': 45},
+      {'hour': 13, 'orders': 40},
+      {'hour': 14, 'orders': 22},
+      {'hour': 15, 'orders': 15},
+      {'hour': 16, 'orders': 10},
+      {'hour': 17, 'orders': 8},
+      {'hour': 18, 'orders': 12},
+      {'hour': 19, 'orders': 20},
+      {'hour': 20, 'orders': 18},
+      {'hour': 21, 'orders': 10},
+    ];
+
+    final morningData = hourlyData.where((d) => (d['hour'] as int) <= 14).toList();
+    final eveningData = hourlyData.where((d) => (d['hour'] as int) > 14).toList();
+
+    return Column(
+      children: [
+        _buildTimeChart(morningData, settings.t('ordersByHourMorning'), isDark),
+        const SizedBox(height: 24),
+        _buildTimeChart(eveningData, settings.t('ordersByHourEvening'), isDark),
+      ],
+    );
+  }
+
+  Widget _buildTimeChart(List<Map<String, dynamic>> data, String title, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -558,7 +698,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Peak Hours',
+            title,
             style: TextStyle(
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
               fontFamily: 'Poppins',
@@ -593,17 +733,20 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 30,
+                      interval: 1,
                       getTitlesWidget: (value, meta) {
-                        const times = ['8am', '10am', '12pm', '2pm', '4pm'];
-                        if (value.toInt() >= 0 && value.toInt() < times.length) {
+                        final hour = value.toInt();
+                        // Check if hour exists in data
+                        if (data.any((d) => d['hour'] == hour)) {
+                          final timeStr = hour > 12 ? '${hour - 12}pm' : (hour == 12 ? '12pm' : '${hour}am');
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
-                              times[value.toInt()],
+                              timeStr,
                               style: TextStyle(
                                 color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                                 fontFamily: 'Poppins',
-                                fontSize: 11,
+                                fontSize: 10,
                               ),
                             ),
                           );
@@ -622,7 +765,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                           style: TextStyle(
                             color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                             fontFamily: 'Poppins',
-                            fontSize: 11,
+                            fontSize: 10,
                           ),
                         );
                       },
@@ -630,13 +773,15 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                   ),
                 ),
                 borderData: FlBorderData(show: false),
-                barGroups: [
-                  _makeBarGroup(0, 5, isDark),
-                  _makeBarGroup(1, 8, isDark),
-                  _makeBarGroup(2, 12, isDark),
-                  _makeBarGroup(3, 9, isDark),
-                  _makeBarGroup(4, 6, isDark),
-                ],
+                barGroups: data.map((d) {
+                  return _makeBarGroup(
+                    d['hour'] as int,
+                    (d['orders'] as int).toDouble(),
+                    isDark,
+                  );
+                }).toList(),
+                minY: 0,
+                maxY: 50,
               ),
             ),
           ),
@@ -661,12 +806,12 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     ]);
   }
 
-  Widget _buildOrderStatusDistribution(bool isDark) {
+  Widget _buildOrderStatusDistribution(bool isDark, AppSettingsProvider settings) {
     final statusData = [
-      {'name': 'Pending', 'value': 25.0, 'color': const Color(0xFFf59e0b)},
-      {'name': 'Confirmed', 'value': 35.0, 'color': const Color(0xFF3b82f6)},
-      {'name': 'Paid', 'value': 30.0, 'color': const Color(0xFF3cad2a)},
-      {'name': 'Cancelled', 'value': 10.0, 'color': const Color(0xFFef4444)},
+      {'name': settings.t('pending'), 'value': 25.0, 'color': const Color(0xFFf59e0b)},
+      {'name': settings.t('confirmed'), 'value': 35.0, 'color': const Color(0xFF3b82f6)},
+      {'name': settings.t('paid'), 'value': 30.0, 'color': const Color(0xFF3cad2a)},
+      {'name': settings.t('cancelled'), 'value': 10.0, 'color': const Color(0xFFef4444)},
     ];
 
     return Container(
@@ -689,7 +834,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Order Status',
+            settings.t('orderStatus'),
             style: TextStyle(
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
               fontFamily: 'Poppins',

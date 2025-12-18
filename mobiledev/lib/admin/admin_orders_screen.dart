@@ -37,7 +37,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
         backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
         elevation: 0,
         title: Text(
-          'All Orders',
+          settings.t('allOrders'),
           style: TextStyle(
             color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
             fontSize: 24,
@@ -75,11 +75,11 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
               ),
               dividerColor: Colors.transparent,
               padding: const EdgeInsets.all(4),
-              tabs: const [
-                Tab(text: 'PENDING'),
-                Tab(text: 'ACCEPTED'),
-                Tab(text: 'REFUSED'),
-                Tab(text: 'CANCELLED'),
+              tabs: [
+                Tab(text: settings.t('pending').toUpperCase()),
+                Tab(text: settings.t('accepted').toUpperCase()),
+                Tab(text: settings.t('refused').toUpperCase()),
+                Tab(text: settings.t('cancelled').toUpperCase()),
               ],
             ),
           ),
@@ -91,7 +91,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
             // Search
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: _buildSearchBar(isDark),
+              child: _buildSearchBar(isDark, settings),
             ),
             
             // Tab Content
@@ -99,10 +99,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildOrdersList('pending', isDark),
-                  _buildOrdersList('accepted', isDark),
-                  _buildOrdersList('refused', isDark),
-                  _buildOrdersList('cancelled', isDark),
+                  _buildOrdersList('pending', isDark, settings),
+                  _buildOrdersList('accepted', isDark, settings),
+                  _buildOrdersList('refused', isDark, settings),
+                  _buildOrdersList('cancelled', isDark, settings),
                 ],
               ),
             ),
@@ -112,7 +112,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
     );
   }
 
-  Widget _buildSearchBar(bool isDark) {
+  Widget _buildSearchBar(bool isDark, AppSettingsProvider settings) {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
@@ -134,7 +134,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
           fontFamily: 'Poppins',
         ),
         decoration: InputDecoration(
-          hintText: 'Search orders...',
+          hintText: settings.t('searchOrders'),
           hintStyle: const TextStyle(
             color: Color(0xFF9ca3af),
             fontFamily: 'Poppins',
@@ -152,7 +152,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
     );
   }
 
-  Widget _buildOrdersList(String status, bool isDark) {
+  Widget _buildOrdersList(String status, bool isDark, AppSettingsProvider settings) {
     // Mock data
     final orders = _getMockOrders(status);
 
@@ -182,7 +182,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
             ),
             const SizedBox(height: 24),
             Text(
-              'No ${status.toLowerCase()} orders',
+              '${settings.t('no')} ${settings.t(status)} ${settings.t('orders')}',
               style: const TextStyle(
                 color: Color(0xFF9ca3af),
                 fontSize: 16,
@@ -199,12 +199,12 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
       padding: const EdgeInsets.all(16),
       itemCount: orders.length,
       itemBuilder: (context, index) {
-        return _buildOrderCard(orders[index], isDark);
+        return _buildOrderCard(orders[index], isDark, settings);
       },
     );
   }
 
-  Widget _buildOrderCard(Map<String, dynamic> order, bool isDark) {
+  Widget _buildOrderCard(Map<String, dynamic> order, bool isDark, AppSettingsProvider settings) {
     final status = order['status'] as String;
     final items = order['items'] as List<Map<String, dynamic>>;
     final totalPrice = items.fold<double>(
@@ -276,7 +276,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
                   ),
                 ],
               ),
-              _buildStatusBadge(status),
+              _buildStatusBadge(status, settings),
             ],
           ),
           const SizedBox(height: 20),
@@ -407,7 +407,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
     );
   }
 
-  Widget _buildStatusBadge(String status) {
+  Widget _buildStatusBadge(String status, AppSettingsProvider settings) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -416,7 +416,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
         border: Border.all(color: _getStatusColor(status).withOpacity(0.2)),
       ),
       child: Text(
-        status.toUpperCase(),
+        settings.t(status).toUpperCase(),
         style: TextStyle(
           color: _getStatusColor(status),
           fontSize: 11,

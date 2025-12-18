@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
+import '../login/login_screen.dart';
+import 'message_dialog.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -63,7 +65,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               Icons.language_rounded,
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
             ),
-            tooltip: 'Change Language',
+            tooltip: settings.t('changeLanguage'),
             onSelected: (String value) {
               settings.setLanguage(value);
             },
@@ -113,9 +115,22 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
             ),
-            tooltip: isDark ? 'Light Mode' : 'Dark Mode',
+            tooltip: isDark ? settings.t('lightMode') : settings.t('darkMode'),
             onPressed: () {
               settings.toggleTheme();
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.logout_rounded,
+              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+            ),
+            tooltip: settings.t('logout'),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
             },
           ),
           const SizedBox(width: 8),
@@ -128,7 +143,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Search
-              _buildSearchBar(),
+              _buildSearchBar(isDark, settings),
               const SizedBox(height: 24),
               
               // Categories
@@ -144,22 +159,31 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
   
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(bool isDark, AppSettingsProvider settings) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1f2e),
+        color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: TextField(
-        style: const TextStyle(
-          color: Color(0xFFf9fafb),
+        style: TextStyle(
+          color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
           fontFamily: 'Poppins',
         ),
         decoration: InputDecoration(
-          hintText: 'Search',
-          hintStyle: TextStyle(
-            color: const Color(0xFF9ca3af),
+          hintText: settings.t('search'),
+          hintStyle: const TextStyle(
+            color: Color(0xFF9ca3af),
             fontFamily: 'Poppins',
           ),
           prefixIcon: const Icon(
@@ -233,9 +257,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   ),
                   child: Row(
                     children: [
-                      Text(
-                        category['icon'] as String,
-                        style: const TextStyle(fontSize: 20),
+                      Icon(
+                        category['icon'] as IconData,
+                        size: 20,
+                        color: isSelected 
+                            ? Colors.white 
+                            : (isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a)),
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -268,6 +295,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
   
   Widget _buildOrderCard(Map<String, dynamic> order, bool isDark) {
+    final settings = Provider.of<AppSettingsProvider>(context, listen: false);
     final status = order['status'] as String;
     final items = order['items'] as List<Map<String, dynamic>>;
     final totalPrice = items.fold<double>(
@@ -328,7 +356,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Order #${order['id']}',
+                        '${settings.t('orderNumber')}${order['id']}',
                         style: TextStyle(
                           color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                           fontFamily: 'Poppins',
@@ -339,7 +367,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   ),
                 ],
               ),
-              _buildStatusBadge(status),
+              _buildStatusBadge(status, settings),
             ],
           ),
           const SizedBox(height: 20),
@@ -479,7 +507,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () => _acceptOrder(order),
                     icon: const Icon(Icons.check_circle_rounded, size: 16),
-                    label: const Text('Accept'),
+                    label: Text(settings.t('accept')),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3cad2a),
                       foregroundColor: Colors.white,
@@ -495,7 +523,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () => _refuseOrder(order),
                     icon: const Icon(Icons.cancel_rounded, size: 16),
-                    label: const Text('Refuse'),
+                    label: Text(settings.t('refuse')),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFef4444),
                       foregroundColor: Colors.white,
@@ -510,10 +538,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 IconButton(
                   onPressed: () => _suggestTime(order),
                   icon: const Icon(Icons.chat_bubble_rounded),
-                  color: const Color(0xFFf9fafb),
+                  color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
                   style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFF1a1f2e),
-                    side: BorderSide(color: Colors.white.withOpacity(0.1)),
+                    backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+                    side: BorderSide(
+                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                    ),
                   ),
                 ),
               ],
@@ -524,7 +554,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
   
-  Widget _buildStatusBadge(String status) {
+  Widget _buildStatusBadge(String status, AppSettingsProvider settings) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -535,7 +565,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ),
       ),
       child: Text(
-        status.toUpperCase(),
+        settings.t(status).toUpperCase(),
         style: TextStyle(
           color: _getStatusColor(status),
           fontFamily: 'Poppins',
@@ -579,13 +609,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
           title: Text(
-            'Accept Order',
+            settings.t('accept'),
             style: TextStyle(
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
             ),
           ),
           content: Text(
-            'Are you sure you want to accept the order from ${order['studentName']}?',
+            '${settings.t('acceptOrderConfirmation')} ${order['studentName']}?',
             style: TextStyle(
               color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
             ),
@@ -593,14 +623,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(settings.t('cancel')),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Order from ${order['studentName']} accepted'),
+                    content: Text('${settings.t('orderFrom')} ${order['studentName']} ${settings.t('acceptedSuffix')}'),
                     backgroundColor: const Color(0xFF3cad2a),
                   ),
                 );
@@ -609,7 +639,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 backgroundColor: const Color(0xFF3cad2a),
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Accept'),
+              child: Text(settings.t('accept')),
             ),
           ],
         );
@@ -627,13 +657,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
           title: Text(
-            'Refuse Order',
+            settings.t('refuse'),
             style: TextStyle(
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
             ),
           ),
           content: Text(
-            'Are you sure you want to refuse the order from ${order['studentName']}?',
+            '${settings.t('refuseOrderConfirmation')} ${order['studentName']}?',
             style: TextStyle(
               color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
             ),
@@ -641,14 +671,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(settings.t('cancel')),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Order from ${order['studentName']} refused'),
+                    content: Text('${settings.t('orderFrom')} ${order['studentName']} ${settings.t('refusedSuffix')}'),
                     backgroundColor: const Color(0xFFef4444),
                   ),
                 );
@@ -657,7 +687,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 backgroundColor: const Color(0xFFef4444),
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Refuse'),
+              child: Text(settings.t('refuse')),
             ),
           ],
         );
@@ -666,229 +696,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
   
   void _suggestTime(Map<String, dynamic> order) {
-    final messageController = TextEditingController();
-    String? selectedTime;
-    
-    final timeSlots = [
-      '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
-      '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
-      '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-      '17:00', '17:30', '18:00',
-    ];
-
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          return AlertDialog(
-            backgroundColor: const Color(0xFF1a1f2e),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Send Message',
-                  style: TextStyle(
-                    color: Color(0xFFf9fafb),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'To: ${order['studentName']}',
-                  style: const TextStyle(
-                    color: Color(0xFF9ca3af),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Suggested Time Section
-                  const Text(
-                    'Suggest Alternative Time (Optional)',
-                    style: TextStyle(
-                      color: Color(0xFFf9fafb),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0e1116),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.1),
-                      ),
-                    ),
-                    child: DropdownButton<String>(
-                      value: selectedTime,
-                      hint: const Text(
-                        'Select time slot...',
-                        style: TextStyle(color: Color(0xFF9ca3af)),
-                      ),
-                      isExpanded: true,
-                      dropdownColor: const Color(0xFF1a1f2e),
-                      style: const TextStyle(
-                        color: Color(0xFFf9fafb),
-                        fontSize: 14,
-                      ),
-                      underline: const SizedBox(),
-                      items: timeSlots.map((time) {
-                        return DropdownMenuItem(
-                          value: time,
-                          child: Text(time),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setDialogState(() {
-                          selectedTime = value;
-                        });
-                      },
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Message Section
-                  const Text(
-                    'Message',
-                    style: TextStyle(
-                      color: Color(0xFFf9fafb),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0e1116),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.1),
-                      ),
-                    ),
-                    child: TextField(
-                      controller: messageController,
-                      maxLines: 4,
-                      maxLength: 200,
-                      style: const TextStyle(
-                        color: Color(0xFFf9fafb),
-                        fontSize: 14,
-                      ),
-                      decoration: const InputDecoration(
-                        hintText: 'Type your message here...',
-                        hintStyle: TextStyle(
-                          color: Color(0xFF9ca3af),
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.all(12),
-                        counterStyle: TextStyle(
-                          color: Color(0xFF9ca3af),
-                          fontSize: 12,
-                        ),
-                      ),
-                      onChanged: (value) {
-                        setDialogState(() {});
-                      },
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Info box
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3cad2a).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: const Color(0xFF3cad2a).withOpacity(0.2),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.info_rounded,
-                          color: const Color(0xFF3cad2a).withOpacity(0.7),
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'The student will receive your message as a notification',
-                            style: TextStyle(
-                              color: const Color(0xFF3cad2a).withOpacity(0.9),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  messageController.dispose();
-                  Navigator.pop(context);
-                },
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Color(0xFF9ca3af)),
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: messageController.text.trim().isEmpty
-                    ? null
-                    : () {
-                        final message = messageController.text.trim();
-                        final timeInfo = selectedTime != null 
-                            ? ' (Suggested time: $selectedTime)'
-                            : '';
-                        
-                        Navigator.pop(context);
-                        
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Message sent to ${order['studentName']}$timeInfo',
-                            ),
-                            backgroundColor: const Color(0xFF3cad2a),
-                            duration: const Duration(seconds: 3),
-                          ),
-                        );
-                        
-                        messageController.dispose();
-                      },
-                icon: const Icon(Icons.send_rounded, size: 18),
-                label: const Text('Send Message'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Provider.of<AppSettingsProvider>(context, listen: false).isDarkMode ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: const Color(0xFF9ca3af).withOpacity(0.3),
-                  disabledForegroundColor: const Color(0xFF9ca3af),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+      builder: (context) => MessageDialog(order: order),
     );
   }
 }

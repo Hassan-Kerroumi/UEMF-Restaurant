@@ -503,6 +503,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           ),
                         ],
                       ),
+<<<<<<< HEAD
                       clipBehavior: Clip.antiAlias,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -541,6 +542,120 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                       fontSize: 16,
                                       fontFamily: 'Poppins',
                                     ),
+=======
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Search Bar
+                    TextField(
+                      controller: _searchController,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '${settings.t('search')}...',
+                        hintStyle: TextStyle(
+                          color: isDark ? Colors.grey[500] : Colors.grey[600],
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: isDark ? Colors.grey[500] : Colors.grey[600],
+                        ),
+                        filled: true,
+                        fillColor: isDark
+                            ? const Color(0xFF1F2430)
+                            : Colors.grey[200], // Light grey for light mode
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Categories Header
+                    Text(
+                      settings.t('categories'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Categories List (Block Style)
+                    SizedBox(
+                      height: 100,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: settings.categories.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: 12),
+                        itemBuilder: (context, index) {
+                          final cat = settings.categories[index];
+                          final isSelected = _selectedCategory == cat['id'];
+                          final catName =
+                              cat['name'][settings.language] ?? cat['id'];
+
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedCategory = cat['id'];
+                              });
+                            },
+                            child: Container(
+                              width: 100,
+                              decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? const Color(0xFF3cad2a)
+                                        : (isDark
+                                            ? const Color(0xFF1F2430)
+                                            : Colors.white),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: isSelected
+                                        ? null
+                                        : Border.all(
+                                            color: isDark
+                                                ? Colors.grey.withOpacity(0.1)
+                                                : Colors.grey.withOpacity(0.2),
+                                          ),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        cat['icon'],
+                                        style: const TextStyle(fontSize: 28),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        catName,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? Colors.white
+                                              : (isDark
+                                                  ? Colors.white
+                                                  : Colors.black),
+                                          fontWeight: isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                          fontSize: 12,
+                                        ),
+>>>>>>> 4145b501262ac1e48c03905ae027e812185cc021
                                   ),
                                   const Spacer(),
                                   Row(
@@ -581,8 +696,131 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         ],
                       ),
                     ),
+<<<<<<< HEAD
                   );
                 },
+=======
+
+                    const SizedBox(height: 24),
+
+                    // Suggestions (Only if All Categories is selected, or always? Figma has it separate)
+                    // The user screenshot shows products grid directly below.
+                    // But previous request asked for suggestions. I'll keep them but maybe smaller or less intrusive?
+                    // Let's stick to the grid first as per screenshot focus.
+
+                    // Products Grid
+                    GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.8, // Taller cards
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
+                      itemCount: filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = filteredProducts[index];
+                        return GestureDetector(
+                          onTap: () => _showProductDetails(product),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF1F2430)
+                                  : Colors.white, // Dark card bg
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: isDark
+                                  ? null
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.1),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Image Placeholder
+                                Expanded(
+                                  flex: 3,
+                                  child: Container(
+                                    color: isDark
+                                        ? Colors.grey[800]
+                                        : Colors.grey[100],
+                                    child: Center(
+                                      child: Text(
+                                        product['icon'],
+                                        style: const TextStyle(fontSize: 48),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 2,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          product['name'][settings.language],
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: isDark
+                                                ? Colors.white
+                                                : Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              '\$${product['price']}',
+                                              style: const TextStyle(
+                                                color: Color(0xFF3cad2a),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF3cad2a),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: const Icon(
+                                                Icons.add,
+                                                size: 16,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 100), // Bottom padding for FAB
+                  ],
+                ),
+>>>>>>> 4145b501262ac1e48c03905ae027e812185cc021
               ),
               const SizedBox(height: 100), // Bottom padding for FAB and Nav
             ],

@@ -108,6 +108,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
   }
 
   Widget _buildStatistics(bool isDark) {
+    final settings = Provider.of<AppSettingsProvider>(context);
     return Row(
       children: [
         Expanded(
@@ -132,7 +133,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Total Pre-orders',
+                  settings.t('totalOrders'),
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.9),
                     fontSize: 13,
@@ -176,7 +177,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Total Meals',
+                  '${settings.t('total')} ${settings.t('items')}',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.9),
                     fontSize: 13,
@@ -241,6 +242,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
   }
 
   Widget _buildTomorrowMenu(bool isDark) {
+    final settings = Provider.of<AppSettingsProvider>(context, listen: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -248,7 +250,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Tomorrow\'s Menu',
+              settings.t('tomorrowsMenu'),
               style: TextStyle(
                 color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
                 fontSize: 18,
@@ -280,6 +282,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
   Widget _buildTomorrowMenuCard(Map<String, dynamic> item, bool isDark) {
     final image = item['image'];
     final isFileImage = image is File;
+    final settings = Provider.of<AppSettingsProvider>(context, listen: false);
 
     return Container(
       decoration: BoxDecoration(
@@ -405,7 +408,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                  
-                  const Spacer(),
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -441,7 +444,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          '${item['voteCount'] ?? 0} Votes',
+                          '${item['voteCount'] ?? 0} ${settings.t('votes')}',
                           style: TextStyle(
                             color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                             fontSize: 12,
@@ -480,7 +483,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
             backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
-              'Add Menu Item',
+              settings.t('addItem'),
               style: TextStyle(
                 color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
                 fontFamily: 'Poppins',
@@ -528,7 +531,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Add Image',
+                                  settings.t('uploadImage'),
                                   style: TextStyle(
                                     color: const Color(0xFF9ca3af).withOpacity(0.8),
                                     fontSize: 12,
@@ -542,13 +545,13 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  _buildTextField('Product Name (EN)', nameEnController, isDark),
+                  _buildTextField('${settings.t('productName')} (EN)', nameEnController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Product Name (AR)', nameArController, isDark),
+                  _buildTextField('${settings.t('productName')} (AR)', nameArController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Product Name (FR)', nameFrController, isDark),
+                  _buildTextField('${settings.t('productName')} (FR)', nameFrController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Price', priceController, isDark, keyboardType: TextInputType.number),
+                  _buildTextField(settings.t('price'), priceController, isDark, keyboardType: TextInputType.number),
                   const SizedBox(height: 12),
                   
                   // Meal Type Dropdown
@@ -573,7 +576,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                       items: ['breakfast', 'lunch', 'dinner']
                           .map((type) => DropdownMenuItem(
                                 value: type,
-                                child: Text(type.toUpperCase()),
+                                child: Text(settings.t(type).toUpperCase()),
                               ))
                           .toList(),
                       onChanged: (value) {
@@ -591,9 +594,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+                child: Text(
+                  settings.t('cancel'),
+                  style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
                 ),
               ),
               ElevatedButton(
@@ -617,9 +620,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                   
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Item added to menu'),
-                      backgroundColor: Color(0xFF3cad2a),
+                    SnackBar(
+                      content: Text(settings.t('itemAddedToMenu')),
+                      backgroundColor: const Color(0xFF3cad2a),
                     ),
                   );
                 },
@@ -629,7 +632,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                child: const Text('Add Item', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+                child: Text(settings.t('addItem'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
               ),
             ],
           );
@@ -658,7 +661,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
             backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
-              'Edit Menu Item',
+              settings.t('editItem'),
               style: TextStyle(
                 color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
                 fontFamily: 'Poppins',
@@ -712,7 +715,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Change Image',
+                                  settings.t('uploadImage'),
                                   style: TextStyle(
                                     color: const Color(0xFF9ca3af).withOpacity(0.8),
                                     fontSize: 12,
@@ -725,13 +728,13 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _buildTextField('Product Name (EN)', nameEnController, isDark),
+                  _buildTextField('${settings.t('productName')} (EN)', nameEnController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Product Name (AR)', nameArController, isDark),
+                  _buildTextField('${settings.t('productName')} (AR)', nameArController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Product Name (FR)', nameFrController, isDark),
+                  _buildTextField('${settings.t('productName')} (FR)', nameFrController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField('Price', priceController, isDark, keyboardType: TextInputType.number),
+                  _buildTextField(settings.t('price'), priceController, isDark, keyboardType: TextInputType.number),
                   const SizedBox(height: 12),
                   
                   // Meal Type Dropdown
@@ -756,7 +759,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                       items: ['breakfast', 'lunch', 'dinner']
                           .map((type) => DropdownMenuItem(
                                 value: type,
-                                child: Text(type.toUpperCase()),
+                                child: Text(settings.t(type).toUpperCase()),
                               ))
                           .toList(),
                       onChanged: (value) {
@@ -774,7 +777,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel', style: TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins')),
+                child: Text(settings.t('cancel'), style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins')),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -791,20 +794,20 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                     });
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Menu item updated'),
-                        backgroundColor: Color(0xFF3cad2a),
+                      SnackBar(
+                        content: Text(settings.t('menuItemUpdated')),
+                        backgroundColor: const Color(0xFF3cad2a),
                       ),
                     );
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3cad2a),
+                  backgroundColor: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                child: const Text('Save Changes', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+                child: Text(settings.t('save'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
               ),
             ],
           );
