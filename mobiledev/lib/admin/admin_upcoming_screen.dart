@@ -315,7 +315,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                   image: image != null
                       ? DecorationImage(
                           image: isFileImage 
-                              ? FileImage(image as File) 
+                              ? FileImage(image) 
                               : NetworkImage(image as String) as ImageProvider,
                           fit: BoxFit.cover,
                         )

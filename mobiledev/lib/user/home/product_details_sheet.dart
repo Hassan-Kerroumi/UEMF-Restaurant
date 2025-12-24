@@ -56,7 +56,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
             spreadRadius: 5,
           ),
@@ -180,7 +180,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: _pickupTime,
+            initialValue: _pickupTime,
             dropdownColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
             style: TextStyle(
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
