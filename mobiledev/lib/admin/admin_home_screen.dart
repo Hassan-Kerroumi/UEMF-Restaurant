@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../login/login_screen.dart';
 import 'message_dialog.dart';
+import '../services/database_service.dart';
+import '../data/order_model.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -13,38 +15,13 @@ class AdminHomeScreen extends StatefulWidget {
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
   String searchQuery = '';
-  String? selectedCategory;
-  
-  // Mock data moved to state
-  List<Map<String, dynamic>> orders = [
-    {
-      'id': '1',
-      'studentName': 'Ahmed Ali',
-      'status': 'pending',
-      'pickupTime': '12:30',
-      'type': 'dine-in',
-      'items': [
-        {'name': 'Espresso', 'price': 5.0, 'quantity': 2},
-        {'name': 'Croissant', 'price': 3.5, 'quantity': 1},
-      ],
-    },
-    {
-      'id': '2',
-      'studentName': 'Sara Ben',
-      'status': 'accepted',
-      'pickupTime': '13:00',
-      'type': 'pickup',
-      'items': [
-        {'name': 'Cappuccino', 'price': 6.0, 'quantity': 1},
-      ],
-    },
-  ];
-  
+  String selectedCategory = 'all';
+
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
     final isDark = settings.isDarkMode;
-    
+
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0e1116) : const Color(0xFFf5f5f5),
       appBar: AppBar(
@@ -55,618 +32,305 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           style: TextStyle(
             color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
             fontSize: 20,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Poppins',
           ),
         ),
         actions: [
-          // Language Selector
-          PopupMenuButton<String>(
-            icon: Icon(
-              Icons.language_rounded,
-              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-            ),
-            tooltip: settings.t('changeLanguage'),
-            onSelected: (String value) {
-              settings.setLanguage(value);
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'en',
-                child: Row(
-                  children: [
-                    Text('🇬🇧  English'),
-                    if (settings.language == 'en') ...[
-                      const Spacer(),
-                      const Icon(Icons.check_rounded, color: Color(0xFF3cad2a), size: 20),
-                    ],
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'fr',
-                child: Row(
-                  children: [
-                    Text('🇫🇷  Français'),
-                    if (settings.language == 'fr') ...[
-                      const Spacer(),
-                      const Icon(Icons.check_rounded, color: Color(0xFF3cad2a), size: 20),
-                    ],
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'ar',
-                child: Row(
-                  children: [
-                    Text('🇲🇦  العربية'),
-                    if (settings.language == 'ar') ...[
-                      const Spacer(),
-                      const Icon(Icons.check_rounded, color: Color(0xFF3cad2a), size: 20),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-          
-          // Theme Toggle
           IconButton(
-            icon: Icon(
-              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-            ),
-            tooltip: isDark ? settings.t('lightMode') : settings.t('darkMode'),
+            icon: Icon(Icons.logout, color: isDark ? Colors.white : Colors.black),
             onPressed: () {
-              settings.toggleTheme();
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.logout_rounded,
-              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-            ),
-            tooltip: settings.t('logout'),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
+              Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
               );
             },
           ),
-          const SizedBox(width: 8),
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      body: StreamBuilder<List<RestaurantOrder>>(
+        stream: DatabaseService().getOrders(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          final allOrders = snapshot.data ?? [];
+
+          // Filter for active orders (pending/accepted) and by search
+          final filteredOrders = allOrders.where((order) {
+            final matchesSearch = order.studentName.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                order.id.toLowerCase().contains(searchQuery.toLowerCase());
+
+            // Only show relevant statuses for "Orders of the Day"
+            final isActive = ['pending', 'accepted', 'ready'].contains(order.status.toLowerCase());
+
+            return matchesSearch && isActive;
+          }).toList();
+
+          return Column(
             children: [
-              // Search
-              _buildSearchBar(isDark, settings),
-              const SizedBox(height: 24),
-              
-              // Categories
-              _buildCategories(),
-              const SizedBox(height: 24),
-              
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  onChanged: (value) => setState(() => searchQuery = value),
+                  style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                  decoration: InputDecoration(
+                    hintText: settings.t('search'),
+                    hintStyle: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    filled: true,
+                    fillColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+
               // Orders List
-              _buildOrdersList(),
+              Expanded(
+                child: filteredOrders.isEmpty
+                    ? Center(
+                  child: Text(
+                    'No active orders found',
+                    style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
+                  ),
+                )
+                    : ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 100),
+                  itemCount: filteredOrders.length,
+                  itemBuilder: (context, index) {
+                    return _buildOrderCard(filteredOrders[index], isDark, settings);
+                  },
+                ),
+              ),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }
-  
-  Widget _buildSearchBar(bool isDark, AppSettingsProvider settings) {
+
+  Widget _buildOrderCard(RestaurantOrder order, bool isDark, AppSettingsProvider settings) {
+    // FIX: Safely convert price and quantity using (x as num).toDouble()
+    final totalItems = order.items.values.fold(0, (sum, item) {
+      final quantity = (item['quantity'] as num?)?.toInt() ?? 1;
+      return sum + quantity;
+    });
+
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-        ),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.05),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: TextField(
-        style: TextStyle(
-          color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-          fontFamily: 'Poppins',
-        ),
-        decoration: InputDecoration(
-          hintText: settings.t('search'),
-          hintStyle: const TextStyle(
-            color: Color(0xFF9ca3af),
-            fontFamily: 'Poppins',
+      child: ExpansionTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: Colors.transparent,
+        collapsedBackgroundColor: Colors.transparent,
+        tilePadding: const EdgeInsets.all(16),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: order.status == 'pending'
+                ? const Color(0xFFf59e0b).withOpacity(0.1)
+                : const Color(0xFF3cad2a).withOpacity(0.1),
+            shape: BoxShape.circle,
           ),
-          prefixIcon: const Icon(
-            Icons.search_rounded,
-            color: Color(0xFF9ca3af),
-            size: 20,
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+          child: Icon(
+            order.status == 'pending' ? Icons.timer_outlined : Icons.check_circle_outline,
+            color: order.status == 'pending' ? const Color(0xFFf59e0b) : const Color(0xFF3cad2a),
           ),
         ),
-        onChanged: (value) {
-          setState(() {
-            searchQuery = value;
-          });
-        },
-      ),
-    );
-  }
-  
-  Widget _buildCategories() {
-    final settings = Provider.of<AppSettingsProvider>(context);
-    final isDark = settings.isDarkMode;
-    final categories = settings.categories;
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          settings.t('categories'),
-          style: TextStyle(
-            color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                order.studentName,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF1a1a1a),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+            ),
+            Text(
+              '${order.pickupTime} ${order.pickupTime.toLowerCase().contains('m') ? '' : ''}',
+              style: TextStyle(
+                color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 50,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: categories.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              final category = categories[index];
-              final isSelected = selectedCategory == category['id'];
-              final categoryName = (category['name'] as Map<String, String>)[settings.language] ?? '';
-              
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedCategory = isSelected ? null : category['id'] as String;
-                  });
-                },
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              '$totalItems items • \$${order.total.toStringAsFixed(2)} • ${order.type}',
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                fontSize: 13,
+                fontFamily: 'Poppins',
+              ),
+            ),
+            if (order.status == 'pending')
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: isSelected 
-                        ? (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b))
-                        : (isDark ? const Color(0xFF1a1f2e) : Colors.white),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected 
-                        ? (isDark ? const Color(0xFF3cad2a).withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.2))
-                        : (isDark 
-                            ? Colors.white.withOpacity(0.1) 
-                            : Colors.black.withOpacity(0.1)),
-                    ),
+                    color: const Color(0xFFf59e0b).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        category['icon'] as IconData,
-                        size: 20,
-                        color: isSelected 
-                            ? Colors.white 
-                            : (isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a)),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        categoryName,
-                        style: TextStyle(
-                          color: isSelected 
-                              ? Colors.white 
-                              : (isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a)),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'Pending Action',
+                    style: TextStyle(
+                      color: const Color(0xFFf59e0b),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildOrdersList() {
-    final settings = Provider.of<AppSettingsProvider>(context);
-    final isDark = settings.isDarkMode;
-
-    return Column(
-      children: orders.map((order) => _buildOrderCard(order, isDark)).toList(),
-    );
-  }
-  
-  Widget _buildOrderCard(Map<String, dynamic> order, bool isDark) {
-    final settings = Provider.of<AppSettingsProvider>(context, listen: false);
-    final status = order['status'] as String;
-    final items = order['items'] as List<Map<String, dynamic>>;
-    final totalPrice = items.fold<double>(
-      0.0,
-      (sum, item) => sum + ((item['price'] as double) * (item['quantity'] as int)),
-    );
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF0e1116) : const Color(0xFFf3f4f6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.person_rounded,
-                      color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF4b5563),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        order['studentName'] as String,
-                        style: TextStyle(
-                          color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
-                          fontFamily: 'Poppins',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${settings.t('orderNumber')}${order['id']}',
-                        style: TextStyle(
-                          color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
-                          fontFamily: 'Poppins',
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ),
-              _buildStatusBadge(status, settings),
-            ],
-          ),
-          const SizedBox(height: 20),
-          
-          // Items
-          ...items.asMap().entries.map((entry) {
-            final index = entry.key;
-            final item = entry.value;
+          ],
+        ),
+        children: [
+          const Divider(),
+          ...order.items.entries.map((entry) {
+            final item = entry.value as Map<String, dynamic>;
+            final itemName = (item['name'] is Map)
+                ? (item['name'][settings.language] ?? item['name']['en'])
+                : item['name'].toString();
+
+            // FIX: Safely parse numbers here too
+            final price = (item['price'] as num?)?.toDouble() ?? 0.0;
+            final quantity = (item['quantity'] as num?)?.toInt() ?? 1;
+
             return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF0e1116) : const Color(0xFFf3f4f6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '${item['quantity']}x',
-                        style: TextStyle(
-                          color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  Text(
+                    '${quantity}x',
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item['name'] as String,
-                          style: TextStyle(
-                            color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
-                            fontFamily: 'Poppins',
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          '\$${item['price']}',
-                          style: TextStyle(
-                            color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
-                            fontFamily: 'Poppins',
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (status == 'pending')
-                    IconButton(
-                      onPressed: () => _removeItem(order, index),
-                      icon: const Icon(Icons.close_rounded, size: 20),
-                      color: const Color(0xFFef4444),
-                      style: IconButton.styleFrom(
-                        backgroundColor: const Color(0xFFef4444).withOpacity(0.1),
-                        padding: const EdgeInsets.all(8),
+                    child: Text(
+                      itemName,
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.black87,
                       ),
                     ),
+                  ),
+                  Text(
+                    '\$${(price * quantity).toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : Colors.black87,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             );
           }),
-          
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Divider(
-              color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-              height: 1,
-            ),
-          ),
-          
-          // Footer
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.schedule_rounded,
-                    color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
-                    size: 16,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    order['pickupTime'] as String,
-                    style: TextStyle(
-                      color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
-                      fontFamily: 'Poppins',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 12),
-                    width: 4,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF4b5563) : const Color(0xFFd1d5db),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  Text(
-                    order['type'] as String,
-                    style: TextStyle(
-                      color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
-                      fontFamily: 'Poppins',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                '\$${totalPrice.toStringAsFixed(2)}',
-                style: TextStyle(
-                  color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
-                  fontFamily: 'Poppins',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          
-          // Action buttons for pending orders
-          if (status == 'pending') ...[
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
+          if (order.status == 'pending')
             Row(
               children: [
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _acceptOrder(order),
-                    icon: const Icon(Icons.check_circle_rounded, size: 16),
-                    label: Text(settings.t('accept')),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3cad2a),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                  child: OutlinedButton(
+                    onPressed: () => _showRefuseDialog(order, settings, isDark),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFef4444),
+                      side: const BorderSide(color: Color(0xFFef4444)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
+                    child: Text(settings.t('refuse')),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _refuseOrder(order),
-                    icon: const Icon(Icons.cancel_rounded, size: 16),
-                    label: Text(settings.t('refuse')),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFef4444),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                  child: OutlinedButton(
+                    onPressed: () => _suggestTime(order.toJson()),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFf59e0b),
+                      side: const BorderSide(color: Color(0xFFf59e0b)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
+                    child: Text(settings.t('suggestTime')),
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () => _suggestTime(order),
-                  icon: const Icon(Icons.chat_bubble_rounded),
-                  color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-                  style: IconButton.styleFrom(
-                    backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-                    side: BorderSide(
-                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      DatabaseService().updateOrderStatus(order.id, 'accepted');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3cad2a),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
+                    child: Text(settings.t('accept')),
                   ),
                 ),
               ],
             ),
-          ],
         ],
       ),
     );
   }
-  
-  Widget _buildStatusBadge(String status, AppSettingsProvider settings) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: _getStatusColor(status).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: _getStatusColor(status).withOpacity(0.2),
-        ),
-      ),
-      child: Text(
-        settings.t(status).toUpperCase(),
-        style: TextStyle(
-          color: _getStatusColor(status),
-          fontFamily: 'Poppins',
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-  
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'pending':
-        return const Color(0xFFf59e0b);
-      case 'accepted':
-        return const Color(0xFF3cad2a);
-      case 'refused':
-        return const Color(0xFFef4444);
-      default:
-        return const Color(0xFF9ca3af);
-    }
-  }
-  
-  void _removeItem(Map<String, dynamic> order, int index) {
-    setState(() {
-      final items = order['items'] as List<Map<String, dynamic>>;
-      items.removeAt(index);
-      
-      // If no items left, maybe refuse order automatically or just leave empty?
-      // For now, we allow empty orders but you might want to handle this.
-    });
-  }
 
-  void _acceptOrder(Map<String, dynamic> order) {
+  void _showRefuseDialog(RestaurantOrder order, AppSettingsProvider settings, bool isDark) {
+    final feedbackController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) {
-        final settings = Provider.of<AppSettingsProvider>(context, listen: false);
-        final isDark = settings.isDarkMode;
-        
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-          title: Text(
-            settings.t('accept'),
-            style: TextStyle(
-              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-            ),
-          ),
-          content: Text(
-            '${settings.t('acceptOrderConfirmation')} ${order['studentName']}?',
-            style: TextStyle(
-              color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(settings.t('cancel')),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${settings.t('orderFrom')} ${order['studentName']} ${settings.t('acceptedSuffix')}'),
-                    backgroundColor: const Color(0xFF3cad2a),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3cad2a),
-                foregroundColor: Colors.white,
+          title: Text(settings.t('refuseOrder'), style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(settings.t('refuseReason'), style: TextStyle(color: isDark ? Colors.grey : Colors.grey[700])),
+              const SizedBox(height: 10),
+              TextField(
+                controller: feedbackController,
+                decoration: InputDecoration(
+                  hintText: "e.g., Out of stock",
+                  filled: true,
+                  fillColor: isDark ? const Color(0xFF0e1116) : Colors.grey[100],
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+                style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black),
               ),
-              child: Text(settings.t('accept')),
-            ),
-          ],
-        );
-      },
-    );
-  }
-  
-  void _refuseOrder(Map<String, dynamic> order) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final settings = Provider.of<AppSettingsProvider>(context, listen: false);
-        final isDark = settings.isDarkMode;
-        
-        return AlertDialog(
-          backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-          title: Text(
-            settings.t('refuse'),
-            style: TextStyle(
-              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-            ),
-          ),
-          content: Text(
-            '${settings.t('refuseOrderConfirmation')} ${order['studentName']}?',
-            style: TextStyle(
-              color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
-            ),
+            ],
           ),
           actions: [
             TextButton(
@@ -675,10 +339,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ),
             ElevatedButton(
               onPressed: () {
+                final feedback = feedbackController.text.trim();
                 Navigator.pop(context);
+                DatabaseService().updateOrderStatus(order.id, 'refused', feedback: feedback);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('${settings.t('orderFrom')} ${order['studentName']} ${settings.t('refusedSuffix')}'),
+                    content: Text('${settings.t('orderFrom')} ${order.studentName} refused'),
                     backgroundColor: const Color(0xFFef4444),
                   ),
                 );
@@ -694,11 +360,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       },
     );
   }
-  
-  void _suggestTime(Map<String, dynamic> order) {
+
+  void _suggestTime(Map<String, dynamic> orderData) {
     showDialog(
       context: context,
-      builder: (context) => MessageDialog(order: order),
+      builder: (context) => MessageDialog(order: orderData),
     );
   }
 }

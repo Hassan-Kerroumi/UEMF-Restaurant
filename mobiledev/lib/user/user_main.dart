@@ -8,7 +8,10 @@ import 'upcoming/user_upcoming_screen.dart';
 import 'cart/cart_sheet.dart';
 
 class UserMain extends StatefulWidget {
-  const UserMain({super.key});
+  // Accept userData map
+  final Map<String, dynamic> userData;
+
+  const UserMain({super.key, required this.userData});
 
   @override
   State<UserMain> createState() => _UserMainState();
@@ -17,35 +20,41 @@ class UserMain extends StatefulWidget {
 class _UserMainState extends State<UserMain> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const UserHomeScreen(),
-    const UserHistoryScreen(),
-    const UserUpcomingScreen(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Initialize Cart with User Info immediately
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final name = widget.userData['name'] ?? 'Student';
+      final id = widget.userData['id'] ?? '';
+      Provider.of<CartProvider>(context, listen: false).setUser(id, name);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // For translation keys
-    final settings = Provider.of<AppSettingsProvider>(context);
+    // Pass user ID to History Screen
+    final List<Widget> screens = [
+      const UserHomeScreen(),
+      UserHistoryScreen(userId: widget.userData['id'] ?? ''), // Pass param here
+      const UserUpcomingScreen(),
+    ];
 
+    final settings = Provider.of<AppSettingsProvider>(context);
     final isDark = settings.isDarkMode;
 
     return Scaffold(
-      extendBody: true, // Important for floating effect
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      extendBody: true,
+      body: IndexedStack(index: _currentIndex, children: screens),
       bottomNavigationBar: SafeArea(
         child: Container(
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF1a1f2e).withOpacity(0.95)
-                : Colors.white.withOpacity(0.95),
+            color: isDark ? const Color(0xFF1a1f2e).withOpacity(0.95) : Colors.white.withOpacity(0.95),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: isDark
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.05),
+              color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
             ),
             boxShadow: [
               BoxShadow(
@@ -58,29 +67,9 @@ class _UserMainState extends State<UserMain> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildNavItem(
-                icon: Icons.home_rounded,
-                label: settings.t('home'),
-                index: 0,
-                isDark: isDark,
-              ),
-              _buildNavItem(
-                icon: Icons.history_rounded,
-                label: settings.t('orders'),
-                index: 1,
-                isDark: isDark,
-              ),
-              _buildNavItem(
-                icon: Icons.schedule_rounded,
-                label: settings.t('upcoming'),
-                index: 2,
-                isDark: isDark,
-              ),
-              // Cart Button as a special item or just another item?
-              // The original had a specialized FAB. Let's keep the FAB separate but maybe style it??
-              // Or integrate it here. Admin doesn't have a FAB.
-              // User request: "adapt the visual... keep user functionality".
-              // I will keep the FAB outside for now as it's a key interaction pattern for the cart.
+              _buildNavItem(icon: Icons.home_rounded, label: settings.t('home'), index: 0, isDark: isDark),
+              _buildNavItem(icon: Icons.history_rounded, label: settings.t('orders'), index: 1, isDark: isDark),
+              _buildNavItem(icon: Icons.schedule_rounded, label: settings.t('upcoming'), index: 2, isDark: isDark),
             ],
           ),
         ),
@@ -88,7 +77,6 @@ class _UserMainState extends State<UserMain> {
       floatingActionButton: Consumer<CartProvider>(
         builder: (context, cart, child) {
           if (cart.itemCount == 0) return const SizedBox.shrink();
-
           return FloatingActionButton.extended(
             onPressed: () {
               showModalBottomSheet(
@@ -99,81 +87,32 @@ class _UserMainState extends State<UserMain> {
               );
             },
             backgroundColor: const Color(0xFF3cad2a),
-            icon: const Icon(
-              Icons.shopping_basket_rounded,
-              color: Colors.white,
-            ),
-            label: Text(
-              '${cart.itemCount}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
-              ),
-            ),
+            icon: const Icon(Icons.shopping_basket_rounded, color: Colors.white),
+            label: Text('${cart.itemCount}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
           );
         },
       ),
     );
   }
 
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-    required bool isDark,
-  }) {
+  Widget _buildNavItem({required IconData icon, required String label, required int index, required bool isDark}) {
     final isSelected = _currentIndex == index;
-
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
+      onTap: () => setState(() => _currentIndex = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 16 : 12,
-          vertical: 8,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: isSelected ? 16 : 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected
-              ? (isDark
-                    ? const Color(0xFF3cad2a).withOpacity(0.15)
-                    : const Color(0xFF062c6b).withOpacity(0.1))
-              : Colors.transparent,
+          color: isSelected ? (isDark ? const Color(0xFF3cad2a).withOpacity(0.15) : const Color(0xFF062c6b).withOpacity(0.1)) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: isSelected
-                  ? (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b))
-                  : (isDark
-                        ? const Color(0xFF9ca3af)
-                        : const Color(0xFF9ca3af)),
-              size: 24,
-            ),
+            Icon(icon, color: isSelected ? (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)) : (isDark ? const Color(0xFF9ca3af) : const Color(0xFF9ca3af)), size: 24),
             if (isSelected) ...[
               const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  color: isSelected
-                      ? (isDark
-                            ? const Color(0xFF3cad2a)
-                            : const Color(0xFF062c6b))
-                      : (isDark
-                            ? const Color(0xFF9ca3af)
-                            : const Color(0xFF9ca3af)),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Poppins',
-                ),
-              ),
+              Text(label, style: TextStyle(color: isSelected ? (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)) : (isDark ? const Color(0xFF9ca3af) : const Color(0xFF9ca3af)), fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'Poppins')),
             ],
           ],
         ),

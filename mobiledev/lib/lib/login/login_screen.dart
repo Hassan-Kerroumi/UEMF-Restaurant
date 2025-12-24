@@ -69,24 +69,27 @@ class _LoginScreenState extends State<LoginScreen>
       if (mounted) {
         if (userData != null) {
           final String role = userData['role'] ?? 'user';
-
+          
           if (role == 'admin') {
+            // Admin Login Success
             Navigator.of(context).pushReplacement(
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) => const AdminMain(),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                   return FadeTransition(opacity: animation, child: child);
                 },
+                transitionDuration: const Duration(milliseconds: 500),
               ),
             );
           } else {
-            // PASS USER DATA TO USER MAIN
+            // User Login Success
             Navigator.of(context).pushReplacement(
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => UserMain(userData: userData),
+                pageBuilder: (context, animation, secondaryAnimation) => const UserMain(),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                   return FadeTransition(opacity: animation, child: child);
                 },
+                transitionDuration: const Duration(milliseconds: 500),
               ),
             );
           }
