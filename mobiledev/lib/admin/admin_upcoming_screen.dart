@@ -441,7 +441,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -473,6 +473,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                       ),
                     ],
                   ),
+
                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
