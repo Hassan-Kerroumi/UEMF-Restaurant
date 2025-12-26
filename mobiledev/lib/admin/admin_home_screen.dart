@@ -294,7 +294,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         Row(
                           children: [
                             Text(
-                              '\$${price.toStringAsFixed(2)}',
+                              '${price.toStringAsFixed(2)} MAD',
                               style: TextStyle(
                                 color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                                 fontFamily: 'Poppins',
@@ -395,7 +395,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 ],
               ),
               Text(
-                '\$${order.total.toStringAsFixed(2)}',
+                '${order.total.toStringAsFixed(2)} MAD',
                 style: TextStyle(
                   color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                   fontFamily: 'Poppins',

@@ -207,7 +207,7 @@ class _UserUpcomingScreenState extends State<UserUpcomingScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '\$${meal.price}',
+                        '${meal.price} MAD',
                         style: TextStyle(
                           color: isDark
                               ? const Color(0xFF3cad2a)

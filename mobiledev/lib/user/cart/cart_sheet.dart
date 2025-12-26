@@ -175,7 +175,7 @@ class CartSheet extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '\$${(price * item['quantity']).toStringAsFixed(2)}',
+                                      '${(price * item['quantity']).toStringAsFixed(2)} MAD',
                                       style: const TextStyle(
                                         color: Color(0xFF3cad2a),
                                         fontWeight: FontWeight.w600,
@@ -258,7 +258,7 @@ class CartSheet extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '\$${cart.totalPrice.toStringAsFixed(2)}',
+                            '${cart.totalPrice.toStringAsFixed(2)} MAD',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
