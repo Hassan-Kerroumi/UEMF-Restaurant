@@ -19,6 +19,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
+  late Stream<List<Meal>> _mealsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _mealsStream = DatabaseService().getMeals();
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -63,34 +71,40 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
     final isDark = settings.isDarkMode;
-    final db = DatabaseService();
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0e1116) : const Color(0xFFf5f5f5),
+      backgroundColor: isDark
+          ? const Color(0xFF0e1116)
+          : const Color(0xFFf5f5f5),
       body: SafeArea(
         child: StreamBuilder<List<Meal>>(
-          stream: db.getMeals(),
+          stream: _mealsStream,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
 
             final allProducts = snapshot.data ?? [];
-            
+
             // Filter Products
             final filteredProducts = allProducts.where((product) {
-              final name = (product.name[settings.language] ?? product.name['en'] ?? '').toLowerCase();
+              final name =
+                  (product.name[settings.language] ?? product.name['en'] ?? '')
+                      .toLowerCase();
               final category = product.category;
 
               final matchesSearch = name.contains(_searchQuery.toLowerCase());
-              final matchesCategory = _selectedCategory == 'all' || category == _selectedCategory;
+              final matchesCategory =
+                  _selectedCategory == 'all' || category == _selectedCategory;
 
               return matchesSearch && matchesCategory;
             }).toList();
 
             return RefreshIndicator(
               onRefresh: () async {
-                setState(() {});
+                setState(() {
+                  _mealsStream = DatabaseService().getMeals();
+                });
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -110,7 +124,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               Text(
                                 settings.t('welcome'),
                                 style: TextStyle(
-                                  color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF64748b),
+                                  color: isDark
+                                      ? const Color(0xFF9ca3af)
+                                      : const Color(0xFF64748b),
                                   fontSize: 14,
                                   fontFamily: 'Poppins',
                                 ),
@@ -118,7 +134,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               Text(
                                 'Hungry?',
                                 style: TextStyle(
-                                  color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                                  color: isDark
+                                      ? const Color(0xFFf9fafb)
+                                      : const Color(0xFF1a1a1a),
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Poppins',
@@ -128,63 +146,82 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           ),
                           Row(
                             children: [
-                               PopupMenuButton<String>(
+                              PopupMenuButton<String>(
                                 icon: Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+                                    color: isDark
+                                        ? const Color(0xFF1a1f2e)
+                                        : Colors.white,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                                      color: isDark
+                                          ? Colors.white.withOpacity(0.1)
+                                          : Colors.grey.withOpacity(0.1),
                                     ),
                                   ),
                                   child: Icon(
                                     Icons.language_rounded,
-                                    color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                                    color: isDark
+                                        ? const Color(0xFFf9fafb)
+                                        : const Color(0xFF1a1a1a),
                                     size: 20,
                                   ),
                                 ),
                                 onSelected: (String value) {
                                   settings.setLanguage(value);
                                 },
-                                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                  PopupMenuItem<String>(
-                                    value: 'en',
-                                    child: Row(
-                                      children: [
-                                        const Text('🇬🇧  English'),
-                                        if (settings.language == 'en') ...[
-                                          const SizedBox(width: 8),
-                                          const Icon(Icons.check, color: Color(0xFF3cad2a), size: 16),
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                  PopupMenuItem<String>(
-                                    value: 'fr',
-                                    child: Row(
-                                      children: [
-                                        const Text('🇫🇷  Français'),
-                                        if (settings.language == 'fr') ...[
-                                          const SizedBox(width: 8),
-                                          const Icon(Icons.check, color: Color(0xFF3cad2a), size: 16),
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                  PopupMenuItem<String>(
-                                    value: 'ar',
-                                    child: Row(
-                                      children: [
-                                        const Text('🇲🇦  العربية'),
-                                        if (settings.language == 'ar') ...[
-                                          const SizedBox(width: 8),
-                                          const Icon(Icons.check, color: Color(0xFF3cad2a), size: 16),
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry<String>>[
+                                      PopupMenuItem<String>(
+                                        value: 'en',
+                                        child: Row(
+                                          children: [
+                                            const Text('🇬🇧  English'),
+                                            if (settings.language == 'en') ...[
+                                              const SizedBox(width: 8),
+                                              const Icon(
+                                                Icons.check,
+                                                color: Color(0xFF3cad2a),
+                                                size: 16,
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      PopupMenuItem<String>(
+                                        value: 'fr',
+                                        child: Row(
+                                          children: [
+                                            const Text('🇫🇷  Français'),
+                                            if (settings.language == 'fr') ...[
+                                              const SizedBox(width: 8),
+                                              const Icon(
+                                                Icons.check,
+                                                color: Color(0xFF3cad2a),
+                                                size: 16,
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      PopupMenuItem<String>(
+                                        value: 'ar',
+                                        child: Row(
+                                          children: [
+                                            const Text('🇲🇦  العربية'),
+                                            if (settings.language == 'ar') ...[
+                                              const SizedBox(width: 8),
+                                              const Icon(
+                                                Icons.check,
+                                                color: Color(0xFF3cad2a),
+                                                size: 16,
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                               ),
                               const SizedBox(width: 12),
                               GestureDetector(
@@ -192,10 +229,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+                                    color: isDark
+                                        ? const Color(0xFF1a1f2e)
+                                        : Colors.white,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                                      color: isDark
+                                          ? Colors.white.withOpacity(0.1)
+                                          : Colors.grey.withOpacity(0.1),
                                     ),
                                   ),
                                   child: const Icon(
@@ -217,10 +258,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+                          color: isDark
+                              ? const Color(0xFF1a1f2e)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFe5e7eb),
+                            color: isDark
+                                ? Colors.white.withOpacity(0.05)
+                                : const Color(0xFFe5e7eb),
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -238,18 +283,29 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             });
                           },
                           style: TextStyle(
-                            color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                            color: isDark
+                                ? const Color(0xFFf9fafb)
+                                : const Color(0xFF1a1a1a),
                             fontFamily: 'Poppins',
                           ),
                           decoration: InputDecoration(
                             icon: Icon(
                               Icons.search_rounded,
-                              color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF9ca3af),
+                              color: isDark
+                                  ? const Color(0xFF9ca3af)
+                                  : const Color(0xFF9ca3af),
                             ),
-                            hintText: settings.t('searchPlaceholder') == 'searchPlaceholder' ? 'Search for food...' : settings.t('searchPlaceholder'),
+                            hintText:
+                                settings.t('searchPlaceholder') ==
+                                    'searchPlaceholder'
+                                ? 'Search for food...'
+                                : settings.t('searchPlaceholder'),
                             hintStyle: TextStyle(
-                              color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF9ca3af),
+                              color: isDark
+                                  ? const Color(0xFF9ca3af)
+                                  : const Color(0xFF9ca3af),
                               fontFamily: 'Poppins',
+                              fontSize: 14,
                             ),
                             border: InputBorder.none,
                             suffixIcon: _searchQuery.isNotEmpty
@@ -276,7 +332,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       child: Text(
                         settings.t('categories'),
                         style: TextStyle(
-                          color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                          color: isDark
+                              ? const Color(0xFFf9fafb)
+                              : const Color(0xFF1a1a1a),
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Poppins',
@@ -290,13 +348,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
-                          _buildCategoryItem('all', settings.t('all'), isDark, icon: Icons.grid_view_rounded),
-                          ...settings.categories.map((cat) => _buildCategoryItem(
-                                cat['id'] as String,
-                                settings.t(cat['id'] as String),
-                                isDark,
-                                icon: _getCategoryIcon(cat['id'] as String),
-                              )),
+                          ...settings.categories.map(
+                            (cat) => _buildCategoryItem(
+                              cat['id'] as String,
+                              settings.t(cat['id'] as String),
+                              isDark,
+                              icon: _getCategoryIcon(cat['id'] as String),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -312,7 +371,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           Text(
                             settings.t('popular'),
                             style: TextStyle(
-                              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                              color: isDark
+                                  ? const Color(0xFFf9fafb)
+                                  : const Color(0xFF1a1a1a),
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Poppins',
@@ -322,19 +383,27 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
-                    if (filteredProducts.isEmpty) 
+
+                    if (filteredProducts.isEmpty)
                       Padding(
                         padding: const EdgeInsets.all(32.0),
                         child: Center(
                           child: Column(
                             children: [
-                              Icon(Icons.search_off_rounded, size: 48, color: isDark ? Colors.white24 : Colors.grey[300]),
+                              Icon(
+                                Icons.search_off_rounded,
+                                size: 48,
+                                color: isDark
+                                    ? Colors.white24
+                                    : Colors.grey[300],
+                              ),
                               const SizedBox(height: 16),
                               Text(
                                 'No items found',
                                 style: TextStyle(
-                                  color: isDark ? Colors.white54 : Colors.grey[500],
+                                  color: isDark
+                                      ? Colors.white54
+                                      : Colors.grey[500],
                                   fontFamily: 'Poppins',
                                 ),
                               ),
@@ -347,15 +416,20 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.70, // Optimized for new card design
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio:
+                                  0.70, // Optimized for new card design
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                            ),
                         itemCount: filteredProducts.length,
                         itemBuilder: (context, index) {
-                          return _buildProductCard(filteredProducts[index], isDark);
+                          return _buildProductCard(
+                            filteredProducts[index],
+                            isDark,
+                          );
                         },
                       ),
                   ],
@@ -433,9 +507,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            product.name[settings.language] ?? product.name['en'] ?? '',
+                            product.name[settings.language] ??
+                                product.name['en'] ??
+                                '',
                             style: TextStyle(
-                              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                              color: isDark
+                                  ? const Color(0xFFf9fafb)
+                                  : const Color(0xFF1a1a1a),
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                               fontFamily: 'Poppins',
@@ -448,7 +526,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           Text(
                             settings.t(product.category),
                             style: TextStyle(
-                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
                               fontSize: 11,
                               fontFamily: 'Poppins',
                             ),
@@ -457,14 +537,16 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           ),
                         ],
                       ),
-                      
+
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             '\$${product.price.toStringAsFixed(2)}',
                             style: TextStyle(
-                              color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                              color: isDark
+                                  ? const Color(0xFF3cad2a)
+                                  : const Color(0xFF062c6b),
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Poppins',
@@ -474,10 +556,16 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                              color: isDark
+                                  ? const Color(0xFF3cad2a)
+                                  : const Color(0xFF062c6b),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.add_rounded, color: Colors.white, size: 18),
+                            child: const Icon(
+                              Icons.add_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                           ),
                         ],
                       ),
@@ -538,7 +626,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   isDark ? Colors.white24 : Colors.grey[400]!,
                 ),
                 value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                    ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
                     : null,
               ),
             ),
@@ -571,9 +660,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildCategoryItem(String id, String label, bool isDark, {IconData? icon}) {
+  Widget _buildCategoryItem(
+    String id,
+    String label,
+    bool isDark, {
+    IconData? icon,
+  }) {
     final isSelected = _selectedCategory == id;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -592,15 +686,21 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : (isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFe5e7eb)),
+                : (isDark
+                      ? Colors.white.withOpacity(0.05)
+                      : const Color(0xFFe5e7eb)),
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)).withOpacity(0.3),
+                    color:
+                        (isDark
+                                ? const Color(0xFF3cad2a)
+                                : const Color(0xFF062c6b))
+                            .withOpacity(0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : null,
         ),
@@ -612,7 +712,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 size: 16,
                 color: isSelected
                     ? Colors.white
-                    : (isDark ? const Color(0xFF9ca3af) : const Color(0xFF64748b)),
+                    : (isDark
+                          ? const Color(0xFF9ca3af)
+                          : const Color(0xFF64748b)),
               ),
               const SizedBox(width: 8),
             ],
@@ -621,7 +723,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               style: TextStyle(
                 color: isSelected
                     ? Colors.white
-                    : (isDark ? const Color(0xFFf9fafb) : const Color(0xFF64748b)),
+                    : (isDark
+                          ? const Color(0xFFf9fafb)
+                          : const Color(0xFF64748b)),
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 fontSize: 12,
                 fontFamily: 'Poppins',

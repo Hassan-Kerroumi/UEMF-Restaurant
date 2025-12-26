@@ -362,15 +362,6 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(20),
                   ),
-<<<<<<< HEAD
-                  image: image != null
-                      ? DecorationImage(
-                          image: isFileImage 
-                              ? FileImage(image) 
-                              : NetworkImage(image as String) as ImageProvider,
-                          fit: BoxFit.cover,
-                        )
-=======
                   image: item.imageUrl != null
                       ? (item.imageUrl!.startsWith('data:image')
                           ? DecorationImage(
@@ -381,7 +372,6 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                               image: NetworkImage(item.imageUrl!),
                               fit: BoxFit.cover,
                             ))
->>>>>>> 9ff07ea06a4996c8cacdb18d1c64ef12b961076b
                       : null,
                 ),
                 child: item.imageUrl == null
@@ -808,7 +798,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                               )
                             : (currentImageUrl != null
                                 ? DecorationImage(
-                                    image: NetworkImage(currentImageUrl!),
+                                    image: NetworkImage(currentImageUrl),
                                     fit: BoxFit.cover,
                                   )
                                 : null),

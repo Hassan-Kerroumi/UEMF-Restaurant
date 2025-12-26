@@ -28,7 +28,12 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addToCart(Map<String, dynamic> product, {int quantity = 1, String? pickupTime, String? orderType}) {
+  void addToCart(
+    Map<String, dynamic> product, {
+    int quantity = 1,
+    String? pickupTime,
+    String? orderType,
+  }) {
     if (_items.containsKey(product['id'])) {
       _items[product['id']]['quantity'] += quantity;
     } else {
@@ -81,14 +86,22 @@ class CartProvider extends ChangeNotifier {
     final orderType = firstItem['orderType'] ?? 'Eat In';
 
     try {
+      // Sanitize items (remove heavy image data) before saving
+      final sanitizedItems = _items.map((key, value) {
+        final item = Map<String, dynamic>.from(value);
+        item.remove('imageUrl');
+        item.remove('icon');
+        return MapEntry(key, item);
+      });
+
       if (_editingOrderId != null) {
         final order = RestaurantOrder(
           id: _editingOrderId!,
           createdAt: timestamp,
           total: totalPrice,
           status: 'pending',
-          items: Map<String, dynamic>.from(_items),
-          userId: _userId!, // Use stored user ID
+          items: sanitizedItems,
+          userId: _userId!,
           studentName: _userName ?? 'Student',
           pickupTime: pickupTime,
           type: orderType,
@@ -101,8 +114,8 @@ class CartProvider extends ChangeNotifier {
           createdAt: timestamp,
           total: totalPrice,
           status: 'pending',
-          items: Map<String, dynamic>.from(_items),
-          userId: _userId!, // Use stored user ID
+          items: sanitizedItems,
+          userId: _userId!,
           studentName: _userName ?? 'Student',
           pickupTime: pickupTime,
           type: orderType,

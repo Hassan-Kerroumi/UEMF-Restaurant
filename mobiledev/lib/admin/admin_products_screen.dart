@@ -19,7 +19,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
   String? selectedCategory;
   final ImagePicker _picker = ImagePicker();
   final DatabaseService _db = DatabaseService();
-  bool _isLoading = false;
+  final bool _isLoading = false;
  
 
   @override
@@ -347,104 +347,11 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
           ),
         ],
       ),
-<<<<<<< HEAD
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              Container(
-                height: 120,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF9ca3af).withOpacity(0.1),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(20),
-                  ),
-                  image: image != null
-                      ? DecorationImage(
-                          image: isFileImage 
-                              ? FileImage(image) 
-                              : NetworkImage(image as String) as ImageProvider,
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: image == null
-                    ? Center(
-                        child: Icon(
-                          Icons.fastfood_rounded,
-                          size: 40,
-                          color: const Color(0xFF9ca3af).withOpacity(0.5),
-                        ),
-                      )
-                    : null,
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => _editProduct(product),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.edit_rounded,
-                          size: 16,
-                          color: Color(0xFF3b82f6),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => _deleteProduct(product),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.delete_rounded,
-                          size: 16,
-                          color: Color(0xFFef4444),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-=======
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
         child: Stack(
           children: [
             Column(
->>>>>>> 9ff07ea06a4996c8cacdb18d1c64ef12b961076b
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Image Area (Top 60%)
@@ -852,7 +759,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                               )
                             : (currentImageUrl != null
                                 ? DecorationImage(
-                                    image: NetworkImage(currentImageUrl!),
+                                    image: NetworkImage(currentImageUrl),
                                     fit: BoxFit.cover,
                                   )
                                 : null),

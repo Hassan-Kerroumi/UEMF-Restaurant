@@ -25,7 +25,11 @@ class _UserMainState extends State<UserMain> {
     super.initState();
     // Initialize Cart with User Info immediately
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final name = widget.userData['name'] ?? 'Student';
+      final name =
+          widget.userData['name'] ??
+          widget.userData['username'] ??
+          widget.userData['email'] ??
+          'Student';
       final id = widget.userData['id'] ?? '';
       Provider.of<CartProvider>(context, listen: false).setUser(id, name);
     });
@@ -51,10 +55,14 @@ class _UserMainState extends State<UserMain> {
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1a1f2e).withOpacity(0.95) : Colors.white.withOpacity(0.95),
+            color: isDark
+                ? const Color(0xFF1a1f2e).withOpacity(0.95)
+                : Colors.white.withOpacity(0.95),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+              color: isDark
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.05),
             ),
             boxShadow: [
               BoxShadow(
@@ -67,9 +75,24 @@ class _UserMainState extends State<UserMain> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildNavItem(icon: Icons.home_rounded, label: settings.t('home'), index: 0, isDark: isDark),
-              _buildNavItem(icon: Icons.history_rounded, label: settings.t('orders'), index: 1, isDark: isDark),
-              _buildNavItem(icon: Icons.schedule_rounded, label: settings.t('upcoming'), index: 2, isDark: isDark),
+              _buildNavItem(
+                icon: Icons.home_rounded,
+                label: settings.t('home'),
+                index: 0,
+                isDark: isDark,
+              ),
+              _buildNavItem(
+                icon: Icons.history_rounded,
+                label: settings.t('orders'),
+                index: 1,
+                isDark: isDark,
+              ),
+              _buildNavItem(
+                icon: Icons.schedule_rounded,
+                label: settings.t('upcoming'),
+                index: 2,
+                isDark: isDark,
+              ),
             ],
           ),
         ),
@@ -87,32 +110,76 @@ class _UserMainState extends State<UserMain> {
               );
             },
             backgroundColor: const Color(0xFF3cad2a),
-            icon: const Icon(Icons.shopping_basket_rounded, color: Colors.white),
-            label: Text('${cart.itemCount}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+            icon: const Icon(
+              Icons.shopping_basket_rounded,
+              color: Colors.white,
+            ),
+            label: Text(
+              '${cart.itemCount}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+              ),
+            ),
           );
         },
       ),
     );
   }
 
-  Widget _buildNavItem({required IconData icon, required String label, required int index, required bool isDark}) {
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required int index,
+    required bool isDark,
+  }) {
     final isSelected = _currentIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: isSelected ? 16 : 12, vertical: 8),
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 16 : 12,
+          vertical: 8,
+        ),
         decoration: BoxDecoration(
-          color: isSelected ? (isDark ? const Color(0xFF3cad2a).withOpacity(0.15) : const Color(0xFF062c6b).withOpacity(0.1)) : Colors.transparent,
+          color: isSelected
+              ? (isDark
+                    ? const Color(0xFF3cad2a).withOpacity(0.15)
+                    : const Color(0xFF062c6b).withOpacity(0.1))
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: isSelected ? (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)) : (isDark ? const Color(0xFF9ca3af) : const Color(0xFF9ca3af)), size: 24),
+            Icon(
+              icon,
+              color: isSelected
+                  ? (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b))
+                  : (isDark
+                        ? const Color(0xFF9ca3af)
+                        : const Color(0xFF9ca3af)),
+              size: 24,
+            ),
             if (isSelected) ...[
               const SizedBox(height: 4),
-              Text(label, style: TextStyle(color: isSelected ? (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)) : (isDark ? const Color(0xFF9ca3af) : const Color(0xFF9ca3af)), fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'Poppins')),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected
+                      ? (isDark
+                            ? const Color(0xFF3cad2a)
+                            : const Color(0xFF062c6b))
+                      : (isDark
+                            ? const Color(0xFF9ca3af)
+                            : const Color(0xFF9ca3af)),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
+                ),
+              ),
             ],
           ],
         ),
