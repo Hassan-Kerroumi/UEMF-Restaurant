@@ -48,25 +48,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  IconData _getCategoryIcon(String categoryId) {
-    switch (categoryId) {
-      case 'all':
-        return Icons.grid_view_rounded;
-      case 'burgers':
-        return Icons.lunch_dining_rounded;
-      case 'pizza':
-        return Icons.local_pizza_rounded;
-      case 'platters':
-        return Icons.set_meal_rounded;
-      case 'sandwiches':
-        return Icons.bakery_dining_rounded;
-      case 'drinks':
-        return Icons.local_drink_rounded;
-      default:
-        return Icons.restaurant_rounded;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
@@ -353,7 +334,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               cat['id'] as String,
                               settings.t(cat['id'] as String),
                               isDark,
-                              icon: _getCategoryIcon(cat['id'] as String),
+                              icon: cat['icon'] as IconData,
                             ),
                           ),
                         ],

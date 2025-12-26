@@ -564,8 +564,6 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   const SizedBox(height: 12),
                   _buildTextField('${settings.t('productName')} (Arabic)', nameArController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField(settings.t('description') == 'description' ? 'Description' : settings.t('description'), descriptionController, isDark, maxLines: 2),
-                  const SizedBox(height: 12),
                   _buildTextField(settings.t('price'), priceController, isDark, keyboardType: TextInputType.number),
                   const SizedBox(height: 12),
                   
@@ -794,8 +792,6 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   _buildTextField('${settings.t('productName')} (French)', nameFrController, isDark),
                   const SizedBox(height: 12),
                   _buildTextField('${settings.t('productName')} (Arabic)', nameArController, isDark),
-                  const SizedBox(height: 12),
-                  _buildTextField(settings.t('description') == 'description' ? 'Description' : settings.t('description'), descriptionController, isDark, maxLines: 2),
                   const SizedBox(height: 12),
                   _buildTextField(settings.t('price'), priceController, isDark, keyboardType: TextInputType.number),
                   const SizedBox(height: 12),

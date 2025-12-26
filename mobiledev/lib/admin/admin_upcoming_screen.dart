@@ -17,7 +17,7 @@ class AdminUpcomingScreen extends StatefulWidget {
 class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
   final ImagePicker _picker = ImagePicker();
   final DatabaseService _db = DatabaseService();
-  
+
   // No local list needed, we stream directly from Firebase
 
   @override
@@ -26,7 +26,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
     final isDark = settings.isDarkMode;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0e1116) : const Color(0xFFf5f5f5),
+      backgroundColor: isDark
+          ? const Color(0xFF0e1116)
+          : const Color(0xFFf5f5f5),
       appBar: AppBar(
         backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
         elevation: 0,
@@ -45,12 +47,16 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
             child: IconButton(
               onPressed: _addNewMeal,
               style: IconButton.styleFrom(
-                backgroundColor: isDark ? const Color(0xFF3cad2a).withOpacity(0.1) : const Color(0xFF062c6b).withOpacity(0.1),
+                backgroundColor: isDark
+                    ? const Color(0xFF3cad2a).withOpacity(0.1)
+                    : const Color(0xFF062c6b).withOpacity(0.1),
                 padding: const EdgeInsets.all(12),
               ),
               icon: Icon(
                 Icons.add_circle_rounded,
-                color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                color: isDark
+                    ? const Color(0xFF3cad2a)
+                    : const Color(0xFF062c6b),
                 size: 24,
               ),
             ),
@@ -64,13 +70,13 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
-          
+
           final upcomingMeals = snapshot.data ?? [];
-          
+
           return SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -83,7 +89,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
 
                   // Tomorrow's Menu Section
                   _buildTomorrowMenu(isDark, upcomingMeals),
-                  
+
                   // Bottom padding for floating nav bar
                   const SizedBox(height: 80),
                 ],
@@ -97,25 +103,25 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
 
   Widget _buildStatistics(bool isDark, List<UpcomingMeal> meals) {
     final settings = Provider.of<AppSettingsProvider>(context, listen: false);
-    
+
     // Calculate total votes
     int totalVotes = 0;
     for (var meal in meals) {
       totalVotes += meal.voteCount;
     }
-    
+
     // Find top voted item
     UpcomingMeal? topItem;
     if (meals.isNotEmpty) {
       // Sort to find the max
       final sortedMeals = List<UpcomingMeal>.from(meals)
         ..sort((a, b) => b.voteCount.compareTo(a.voteCount));
-      
+
       if (sortedMeals.first.voteCount > 0) {
         topItem = sortedMeals.first;
       }
     }
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -123,7 +129,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.08),
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : const Color(0xFF062c6b).withOpacity(0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -151,7 +159,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                   Text(
                     settings.t('totalVotes'),
                     style: TextStyle(
-                      color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF64748b),
+                      color: isDark
+                          ? const Color(0xFF9ca3af)
+                          : const Color(0xFF64748b),
                       fontSize: 14,
                       fontFamily: 'Poppins',
                     ),
@@ -159,7 +169,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                   Text(
                     totalVotes.toString(),
                     style: TextStyle(
-                      color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                      color: isDark
+                          ? const Color(0xFFf9fafb)
+                          : const Color(0xFF1a1a1a),
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Poppins',
@@ -171,7 +183,11 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
           ),
           if (topItem != null) ...[
             const SizedBox(height: 20),
-            Divider(color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2)),
+            Divider(
+              color: isDark
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.grey.withOpacity(0.2),
+            ),
             const SizedBox(height: 20),
             Row(
               children: [
@@ -194,15 +210,21 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                       Text(
                         settings.t('topRequested'),
                         style: TextStyle(
-                          color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF64748b),
+                          color: isDark
+                              ? const Color(0xFF9ca3af)
+                              : const Color(0xFF64748b),
                           fontSize: 14,
                           fontFamily: 'Poppins',
                         ),
                       ),
                       Text(
-                        topItem.name[settings.language] ?? topItem.name['en'] ?? '',
+                        topItem.name[settings.language] ??
+                            topItem.name['en'] ??
+                            '',
                         style: TextStyle(
-                          color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                          color: isDark
+                              ? const Color(0xFFf9fafb)
+                              : const Color(0xFF1a1a1a),
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Poppins',
@@ -214,7 +236,10 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF3b82f6).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -237,7 +262,12 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, bool isDark, {TextInputType? keyboardType}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    bool isDark, {
+    TextInputType? keyboardType,
+  }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
@@ -268,7 +298,10 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
             width: 1.5,
           ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
     );
   }
@@ -284,7 +317,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
             Text(
               settings.t('tomorrowsMenu'),
               style: TextStyle(
-                color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                color: isDark
+                    ? const Color(0xFFf9fafb)
+                    : const Color(0xFF1a1a1a),
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 fontFamily: 'Poppins',
@@ -299,10 +334,16 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
-                   Icon(Icons.event_busy, color: isDark ? Colors.white24 : Colors.grey[300], size: 48),
-                   const SizedBox(height: 16),
-                   Text(
-                    settings.t('noItemsFound') == 'noItemsFound' ? 'No items planned yet' : settings.t('noItemsFound'),
+                  Icon(
+                    Icons.event_busy,
+                    color: isDark ? Colors.white24 : Colors.grey[300],
+                    size: 48,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    settings.t('noItemsFound') == 'noItemsFound'
+                        ? 'No items planned yet'
+                        : settings.t('noItemsFound'),
                     style: TextStyle(
                       color: isDark ? Colors.white54 : Colors.black54,
                       fontFamily: 'Poppins',
@@ -343,7 +384,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.08),
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : const Color(0xFF062c6b).withOpacity(0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -364,14 +407,16 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                   ),
                   image: item.imageUrl != null
                       ? (item.imageUrl!.startsWith('data:image')
-                          ? DecorationImage(
-                              image: MemoryImage(base64Decode(item.imageUrl!.split(',')[1])),
-                              fit: BoxFit.cover,
-                            )
-                          : DecorationImage(
-                              image: NetworkImage(item.imageUrl!),
-                              fit: BoxFit.cover,
-                            ))
+                            ? DecorationImage(
+                                image: MemoryImage(
+                                  base64Decode(item.imageUrl!.split(',')[1]),
+                                ),
+                                fit: BoxFit.cover,
+                              )
+                            : DecorationImage(
+                                image: NetworkImage(item.imageUrl!),
+                                fit: BoxFit.cover,
+                              ))
                       : null,
                 ),
                 child: item.imageUrl == null
@@ -452,7 +497,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                       Text(
                         item.name[settings.language] ?? item.name['en'] ?? '',
                         style: TextStyle(
-                          color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                          color: isDark
+                              ? const Color(0xFFf9fafb)
+                              : const Color(0xFF1a1a1a),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           fontFamily: 'Poppins',
@@ -461,10 +508,12 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                       Text(
+                      Text(
                         settings.t(item.category),
                         style: TextStyle(
-                          color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
+                          color: isDark
+                              ? const Color(0xFF9ca3af)
+                              : const Color(0xFF6b7280),
                           fontSize: 11,
                           fontFamily: 'Poppins',
                         ),
@@ -473,34 +522,49 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                       ),
                     ],
                   ),
-                 
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         '\$${item.price}',
                         style: TextStyle(
-                          color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                          color: isDark
+                              ? const Color(0xFF3cad2a)
+                              : const Color(0xFF062c6b),
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Poppins',
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)).withOpacity(0.1),
+                          color:
+                              (isDark
+                                      ? const Color(0xFF3cad2a)
+                                      : const Color(0xFF062c6b))
+                                  .withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                             color: (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)).withOpacity(0.2),
-                          )
+                            color:
+                                (isDark
+                                        ? const Color(0xFF3cad2a)
+                                        : const Color(0xFF062c6b))
+                                    .withOpacity(0.2),
+                          ),
                         ),
                         child: Row(
                           children: [
                             Icon(
-                                Icons.thumb_up_rounded, 
-                                size: 12, 
-                                color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)
+                              Icons.thumb_up_rounded,
+                              size: 12,
+                              color: isDark
+                                  ? const Color(0xFF3cad2a)
+                                  : const Color(0xFF062c6b),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -508,7 +572,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                                color: isDark
+                                    ? const Color(0xFF3cad2a)
+                                    : const Color(0xFF062c6b),
                               ),
                             ),
                           ],
@@ -539,16 +605,23 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final settings = Provider.of<AppSettingsProvider>(context, listen: false);
+          final settings = Provider.of<AppSettingsProvider>(
+            context,
+            listen: false,
+          );
           final isDark = settings.isDarkMode;
 
           return AlertDialog(
             backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: Text(
               settings.t('addItem'),
               style: TextStyle(
-                color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                color: isDark
+                    ? const Color(0xFFf9fafb)
+                    : const Color(0xFF1a1a1a),
                 fontFamily: 'Poppins',
                 fontWeight: FontWeight.w600,
               ),
@@ -560,7 +633,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                   // Image Picker
                   GestureDetector(
                     onTap: () async {
-                      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+                      final XFile? image = await _picker.pickImage(
+                        source: ImageSource.gallery,
+                      );
                       if (image != null) {
                         final bytes = await image.readAsBytes();
                         setDialogState(() {
@@ -573,10 +648,14 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                       height: 120,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0e1116) : Colors.grey[100],
+                        color: isDark
+                            ? const Color(0xFF0e1116)
+                            : Colors.grey[100],
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                          color: isDark
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.black.withOpacity(0.05),
                         ),
                         image: selectedImageBytes != null
                             ? DecorationImage(
@@ -592,13 +671,17 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                                 Icon(
                                   Icons.add_a_photo_rounded,
                                   size: 32,
-                                  color: const Color(0xFF9ca3af).withOpacity(0.5),
+                                  color: const Color(
+                                    0xFF9ca3af,
+                                  ).withOpacity(0.5),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   settings.t('uploadImage'),
                                   style: TextStyle(
-                                    color: const Color(0xFF9ca3af).withOpacity(0.8),
+                                    color: const Color(
+                                      0xFF9ca3af,
+                                    ).withOpacity(0.8),
                                     fontSize: 12,
                                     fontFamily: 'Poppins',
                                   ),
@@ -610,39 +693,69 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  _buildTextField('${settings.t('productName')} (EN)', nameEnController, isDark),
+                  _buildTextField(
+                    '${settings.t('productName')} (EN)',
+                    nameEnController,
+                    isDark,
+                  ),
                   const SizedBox(height: 12),
-                  _buildTextField('${settings.t('productName')} (AR)', nameArController, isDark),
+                  _buildTextField(
+                    '${settings.t('productName')} (AR)',
+                    nameArController,
+                    isDark,
+                  ),
                   const SizedBox(height: 12),
-                  _buildTextField('${settings.t('productName')} (FR)', nameFrController, isDark),
+                  _buildTextField(
+                    '${settings.t('productName')} (FR)',
+                    nameFrController,
+                    isDark,
+                  ),
                   const SizedBox(height: 12),
-                  _buildTextField(settings.t('price'), priceController, isDark, keyboardType: TextInputType.number),
+                  _buildTextField(
+                    settings.t('price'),
+                    priceController,
+                    isDark,
+                    keyboardType: TextInputType.number,
+                  ),
                   const SizedBox(height: 12),
-                  
+
                   // Meal Type Dropdown
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF0e1116) : Colors.grey[100],
+                      color: isDark
+                          ? const Color(0xFF0e1116)
+                          : Colors.grey[100],
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isDark ? Colors.white.withOpacity(0.1) : Colors.transparent,
+                        color: isDark
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.transparent,
                       ),
                     ),
                     child: DropdownButton<String>(
                       value: selectedType,
                       isExpanded: true,
-                      dropdownColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+                      dropdownColor: isDark
+                          ? const Color(0xFF1a1f2e)
+                          : Colors.white,
                       style: TextStyle(
-                        color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                        color: isDark
+                            ? const Color(0xFFf9fafb)
+                            : const Color(0xFF1a1a1a),
                         fontFamily: 'Poppins',
                       ),
                       underline: const SizedBox(),
                       items: ['breakfast', 'lunch', 'dinner']
-                          .map((type) => DropdownMenuItem(
-                                value: type,
-                                child: Text(settings.t(type).toUpperCase()),
-                              ))
+                          .map(
+                            (type) => DropdownMenuItem(
+                              value: type,
+                              child: Text(settings.t(type).toUpperCase()),
+                            ),
+                          )
                           .toList(),
                       onChanged: (value) {
                         if (value != null) {
@@ -661,75 +774,100 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                 onPressed: () => Navigator.pop(context),
                 child: Text(
                   settings.t('cancel'),
-                  style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+                  style: const TextStyle(
+                    color: Color(0xFF9ca3af),
+                    fontFamily: 'Poppins',
+                  ),
                 ),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                  backgroundColor: isDark
+                      ? const Color(0xFF3cad2a)
+                      : const Color(0xFF062c6b),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                 ),
-                onPressed: isSaving ? null : () async {
-                  if (nameEnController.text.isEmpty || priceController.text.isEmpty) {
-                    return;
-                  }
-                  
-                  setDialogState(() => isSaving = true);
-                  final messenger = ScaffoldMessenger.of(context);
-                  
-                  try {
-                    // Create object with UpcomingMeal model (has voteCount)
-                    final newMeal = UpcomingMeal(
-                      id: '', // Generated by Firebase
-                      name: {
-                        'en': nameEnController.text,
-                        'ar': nameArController.text,
-                        'fr': nameFrController.text,
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        if (nameEnController.text.isEmpty ||
+                            priceController.text.isEmpty) {
+                          return;
+                        }
+
+                        setDialogState(() => isSaving = true);
+                        final messenger = ScaffoldMessenger.of(context);
+
+                        try {
+                          // Create object with UpcomingMeal model (has voteCount)
+                          final newMeal = UpcomingMeal(
+                            id: '', // Generated by Firebase
+                            name: {
+                              'en': nameEnController.text,
+                              'ar': nameArController.text,
+                              'fr': nameFrController.text,
+                            },
+                            description: {'en': ''},
+                            price: double.tryParse(priceController.text) ?? 0.0,
+                            category: selectedType, // Using type as category
+                            date: DateTime.now().add(
+                              const Duration(days: 1),
+                            ), // Default to tomorrow
+                            voteCount: 0,
+                            imageUrl: null,
+                          );
+
+                          // THIS calls addUpcomingMeal in database service, which uses 'upcoming_menu' collection
+                          await _db.addUpcomingMeal(
+                            newMeal,
+                            imageBytes: selectedImageBytes,
+                            imageName: selectedImageName,
+                          );
+
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(settings.t('itemAddedToMenu')),
+                                backgroundColor: const Color(0xFF3cad2a),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            setDialogState(() => isSaving = false);
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text('Error: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
                       },
-                      description: {'en': ''},
-                      price: double.tryParse(priceController.text) ?? 0.0,
-                      category: selectedType, // Using type as category
-                      date: DateTime.now().add(const Duration(days: 1)), // Default to tomorrow
-                      voteCount: 0,
-                      imageUrl: null,
-                    );
-                    
-                    // THIS calls addUpcomingMeal in database service, which uses 'upcoming_menu' collection
-                    await _db.addUpcomingMeal(newMeal, imageBytes: selectedImageBytes, imageName: selectedImageName);
-                    
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(settings.t('itemAddedToMenu')),
-                          backgroundColor: const Color(0xFF3cad2a),
+                child: isSaving
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
                         ),
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      setDialogState(() => isSaving = false);
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text('Error: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                },
-                child: isSaving 
-                  ? const SizedBox(
-                      height: 24, 
-                      width: 24, 
-                      child: CircularProgressIndicator(
-                        color: Colors.white, 
-                        strokeWidth: 3,
                       )
-                    )
-                  : Text(settings.t('addItem'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+                    : Text(
+                        settings.t('addItem'),
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ],
           );
@@ -753,16 +891,23 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final settings = Provider.of<AppSettingsProvider>(context, listen: false);
+          final settings = Provider.of<AppSettingsProvider>(
+            context,
+            listen: false,
+          );
           final isDark = settings.isDarkMode;
 
           return AlertDialog(
             backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: Text(
               settings.t('editItem'),
               style: TextStyle(
-                color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                color: isDark
+                    ? const Color(0xFFf9fafb)
+                    : const Color(0xFF1a1a1a),
                 fontFamily: 'Poppins',
                 fontWeight: FontWeight.w600,
               ),
@@ -773,7 +918,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                 children: [
                   GestureDetector(
                     onTap: () async {
-                      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+                      final XFile? image = await _picker.pickImage(
+                        source: ImageSource.gallery,
+                      );
                       if (image != null) {
                         final bytes = await image.readAsBytes();
                         setDialogState(() {
@@ -786,10 +933,14 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                       height: 120,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0e1116) : Colors.grey[100],
+                        color: isDark
+                            ? const Color(0xFF0e1116)
+                            : Colors.grey[100],
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                          color: isDark
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.black.withOpacity(0.05),
                         ),
                         image: selectedImageBytes != null
                             ? DecorationImage(
@@ -797,26 +948,32 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                                 fit: BoxFit.cover,
                               )
                             : (currentImageUrl != null
-                                ? DecorationImage(
-                                    image: NetworkImage(currentImageUrl),
-                                    fit: BoxFit.cover,
-                                  )
-                                : null),
+                                  ? DecorationImage(
+                                      image: NetworkImage(currentImageUrl),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null),
                       ),
-                      child: (selectedImageBytes == null && currentImageUrl == null)
+                      child:
+                          (selectedImageBytes == null &&
+                              currentImageUrl == null)
                           ? Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
                                   Icons.add_a_photo_rounded,
                                   size: 32,
-                                  color: const Color(0xFF9ca3af).withOpacity(0.5),
+                                  color: const Color(
+                                    0xFF9ca3af,
+                                  ).withOpacity(0.5),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  settings.t('changeImage'),
+                                  settings.t('uploadImage'),
                                   style: TextStyle(
-                                    color: const Color(0xFF9ca3af).withOpacity(0.8),
+                                    color: const Color(
+                                      0xFF9ca3af,
+                                    ).withOpacity(0.8),
                                     fontSize: 12,
                                     fontFamily: 'Poppins',
                                   ),
@@ -827,48 +984,30 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
-                  _buildTextField('${settings.t('productName')} (EN)', nameEnController, isDark),
+
+                  _buildTextField(
+                    '${settings.t('productName')} (EN)',
+                    nameEnController,
+                    isDark,
+                  ),
                   const SizedBox(height: 12),
-                  _buildTextField('${settings.t('productName')} (AR)', nameArController, isDark),
+                  _buildTextField(
+                    '${settings.t('productName')} (AR)',
+                    nameArController,
+                    isDark,
+                  ),
                   const SizedBox(height: 12),
-                  _buildTextField('${settings.t('productName')} (FR)', nameFrController, isDark),
+                  _buildTextField(
+                    '${settings.t('productName')} (FR)',
+                    nameFrController,
+                    isDark,
+                  ),
                   const SizedBox(height: 12),
-                  _buildTextField(settings.t('price'), priceController, isDark, keyboardType: TextInputType.number),
-                  const SizedBox(height: 12),
-                  
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF0e1116) : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isDark ? Colors.white.withOpacity(0.1) : Colors.transparent,
-                      ),
-                    ),
-                    child: DropdownButton<String>(
-                      value: selectedType,
-                      isExpanded: true,
-                      dropdownColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-                      style: TextStyle(
-                        color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-                        fontFamily: 'Poppins',
-                      ),
-                      underline: const SizedBox(),
-                      items: ['breakfast', 'lunch', 'dinner']
-                          .map((type) => DropdownMenuItem(
-                                value: type,
-                                child: Text(settings.t(type).toUpperCase()),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setDialogState(() {
-                            selectedType = value;
-                          });
-                        }
-                      },
-                    ),
+                  _buildTextField(
+                    settings.t('price'),
+                    priceController,
+                    isDark,
+                    keyboardType: TextInputType.number,
                   ),
                 ],
               ),
@@ -878,69 +1017,93 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                 onPressed: () => Navigator.pop(context),
                 child: Text(
                   settings.t('cancel'),
-                  style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+                  style: const TextStyle(
+                    color: Color(0xFF9ca3af),
+                    fontFamily: 'Poppins',
+                  ),
                 ),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                  backgroundColor: isDark
+                      ? const Color(0xFF3cad2a)
+                      : const Color(0xFF062c6b),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                 ),
-                onPressed: isSaving ? null : () async {
-                  if (nameEnController.text.isEmpty || priceController.text.isEmpty) {
-                    return;
-                  }
-                  
-                  setDialogState(() => isSaving = true);
-                  final messenger = ScaffoldMessenger.of(context);
-                  
-                  try {
-                    final updatedMeal = item.copyWith(
-                      name: {
-                        'en': nameEnController.text,
-                        'ar': nameArController.text,
-                        'fr': nameFrController.text,
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        setDialogState(() => isSaving = true);
+                        final messenger = ScaffoldMessenger.of(context);
+
+                        try {
+                          // Update model
+                          final updatedMeal = UpcomingMeal(
+                            id: item.id,
+                            name: {
+                              'en': nameEnController.text,
+                              'ar': nameArController.text,
+                              'fr': nameFrController.text,
+                            },
+                            description: item.description,
+                            price: double.tryParse(priceController.text) ?? 0.0,
+                            category: selectedType,
+                            date: item.date,
+                            voteCount: item.voteCount,
+                            imageUrl: item.imageUrl,
+                          );
+
+                          await _db.updateUpcomingMeal(
+                            item.id,
+                            updatedMeal,
+                            newImageBytes: selectedImageBytes,
+                            newImageName: selectedImageName,
+                          );
+
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(settings.t('itemUpdated')),
+                                backgroundColor: const Color(0xFF3cad2a),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            setDialogState(() => isSaving = false);
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text('Error: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
                       },
-                      price: double.tryParse(priceController.text) ?? 0.0,
-                      category: selectedType,
-                    );
-                    
-                    // Uses updateUpcomingMeal -> 'upcoming_menu'
-                    await _db.updateUpcomingMeal(item.id, updatedMeal, newImageBytes: selectedImageBytes, newImageName: selectedImageName);
-                    
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(settings.t('itemUpdated')),
-                          backgroundColor: const Color(0xFF3cad2a),
+                child: isSaving
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
                         ),
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      setDialogState(() => isSaving = false);
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text('Error: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                },
-                child: isSaving 
-                  ? const SizedBox(
-                      height: 24, 
-                      width: 24, 
-                      child: CircularProgressIndicator(
-                        color: Colors.white, 
-                        strokeWidth: 3,
                       )
-                    )
-                  : Text(settings.t('save'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+                    : Text(
+                        settings.t('save'),
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ],
           );
@@ -959,7 +1122,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
         backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          settings.t('delete'),
+          settings.t('deleteItem'),
           style: TextStyle(
             color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
             fontFamily: 'Poppins',
@@ -967,9 +1130,9 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
           ),
         ),
         content: Text(
-          '${settings.t('deleteConfirmation')} "${item.name[settings.language] ?? item.name['en']}"?',
+          settings.t('deleteConfirm'),
           style: TextStyle(
-            color: isDark ? Colors.white70 : Colors.black87,
+            color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF64748b),
             fontFamily: 'Poppins',
           ),
         ),
@@ -978,43 +1141,51 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               settings.t('cancel'),
-              style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+              style: const TextStyle(
+                color: Color(0xFF9ca3af),
+                fontFamily: 'Poppins',
+              ),
             ),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFef4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             onPressed: () async {
               try {
-                // Uses deleteUpcomingMeal -> 'upcoming_menu'
                 await _db.deleteUpcomingMeal(item.id);
-                
                 if (context.mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(settings.t('itemDeleted')),
-                      backgroundColor: const Color(0xFF3cad2a),
+                      backgroundColor: const Color(0xFFef4444),
                     ),
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  Navigator.pop(context);
+                  Navigator.pop(context); // Close dialog
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Error deleting item: $e'),
+                      content: Text('Error deleting: $e'),
                       backgroundColor: Colors.red,
                     ),
                   );
                 }
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFef4444),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Text(
+              settings.t('delete'),
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            child: Text(settings.t('delete'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
           ),
         ],
       ),

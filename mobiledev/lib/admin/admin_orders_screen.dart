@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../providers/app_settings_provider.dart';
 import '../services/database_service.dart';
 import '../data/order_model.dart';
@@ -13,25 +12,25 @@ class AdminOrdersScreen extends StatefulWidget {
 }
 
 class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
-  String _searchQuery = '';
-  String _selectedFilter = 'All'; // All, Pending, Accepted, Refused
+  String searchQuery = '';
+  String selectedStatus = 'all';
 
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
-    // Force dark mode colors as per image/design requirement, or adapt if needed.
-    // The image shows a dark theme.
-    final bool isDark = true;
+    final isDark = settings.isDarkMode;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0e1116), // Dark background from image
+      backgroundColor: isDark
+          ? const Color(0xFF0e1116)
+          : const Color(0xFFf5f5f5),
       appBar: AppBar(
+        backgroundColor: isDark ? const Color(0xFF0e1116) : Colors.white,
         elevation: 0,
-        backgroundColor: const Color(0xFF0e1116),
         title: Text(
           settings.t('allOrders'),
-          style: const TextStyle(
-            color: Color(0xFF3cad2a),
+          style: TextStyle(
+            color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
             fontSize: 24,
             fontWeight: FontWeight.bold,
             fontFamily: 'Poppins',
@@ -44,433 +43,772 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextField(
-              onChanged: (val) => setState(() => _searchQuery = val),
-              style: const TextStyle(
-                color: Colors.white,
-                fontFamily: 'Poppins',
-              ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: const Color(0xFF1a1f2e),
-                hintText: settings.t('searchOrders'),
-                hintStyle: TextStyle(
-                  color: Colors.grey[600],
-                  fontFamily: 'Poppins',
-                ),
-                prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-            ),
-          ),
+      body: SafeArea(
+        child: StreamBuilder<List<RestaurantOrder>>(
+          stream: DatabaseService().getOrders(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          // Filter Tabs
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+
+            final allOrders = snapshot.data ?? [];
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildFilterChip(
-                  'All',
-                  Icons.inbox_rounded,
-                  const Color(0xFF3cad2a),
+                // Search
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: _buildSearchBar(isDark, settings),
                 ),
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                  'pending',
-                  Icons.timer_outlined,
-                  const Color(0xFFf59e0b),
-                ), // Orange/Yellow
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                  'accepted',
-                  Icons.check_circle_outline,
-                  const Color(0xFF3cad2a),
+
+                // Status Filters
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: _buildCategories(isDark, settings),
                 ),
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                  'refused',
-                  Icons.cancel_outlined,
-                  const Color(0xFFef4444),
+
+                // Orders List
+                Expanded(
+                  child: _buildOrdersList(
+                    selectedStatus,
+                    allOrders,
+                    isDark,
+                    settings,
+                  ),
                 ),
               ],
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Order List
-          Expanded(
-            child: StreamBuilder<List<RestaurantOrder>>(
-              stream: DatabaseService().getOrders(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF3cad2a)),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Error: ${snapshot.error}',
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  );
-                }
-
-                final orders = snapshot.data ?? [];
-
-                // Init filtering
-                final filteredOrders = orders.where((order) {
-                  // Filter by status
-                  if (_selectedFilter != 'All' &&
-                      order.status.toLowerCase() !=
-                          _selectedFilter.toLowerCase()) {
-                    return false;
-                  }
-
-                  // Filter by search
-                  if (_searchQuery.isNotEmpty) {
-                    final search = _searchQuery.toLowerCase();
-                    return order.studentName.toLowerCase().contains(search) ||
-                        order.id.contains(search);
-                  }
-
-                  return true;
-                }).toList();
-
-                if (filteredOrders.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.inbox_outlined,
-                          size: 60,
-                          color: Colors.grey[800],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          settings.t('noItemsFound'),
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: filteredOrders.length,
-                  itemBuilder: (context, index) {
-                    return _buildOrderCard(filteredOrders[index], settings);
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, IconData icon, Color color) {
-    final isSelected = _selectedFilter.toLowerCase() == label.toLowerCase();
+  Widget _buildCategories(bool isDark, AppSettingsProvider settings) {
+    final statuses = [
+      {'id': 'all', 'name': settings.t('all'), 'icon': Icons.all_inbox_rounded},
+      {
+        'id': 'pending',
+        'name': settings.t('pending'),
+        'icon': Icons.schedule_rounded,
+      },
+      {
+        'id': 'accepted',
+        'name': settings.t('accepted'),
+        'icon': Icons.check_circle_rounded,
+      },
+      {
+        'id': 'refused',
+        'name': settings.t('refused'),
+        'icon': Icons.cancel_rounded,
+      },
+      {
+        'id': 'cancelled',
+        'name': settings.t('cancelled'),
+        'icon': Icons.block_rounded,
+      },
+    ];
 
-    // Customize label for display
-    String displayLabel = label;
-    if (label == 'All')
-      displayLabel = 'All';
-    else
-      displayLabel = label[0].toUpperCase() + label.substring(1);
+    return SizedBox(
+      height: 46,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: statuses.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final status = statuses[index];
+          final isSelected = selectedStatus == status['id'];
 
-    return GestureDetector(
-      onTap: () => setState(() => _selectedFilter = label),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? color : const Color(0xFF1a1f2e),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? color : Colors.white.withOpacity(0.05),
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedStatus = status['id'] as String;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? (isDark
+                          ? const Color(0xFF3cad2a)
+                          : const Color(0xFF062c6b))
+                    : (isDark ? const Color(0xFF1a1f2e) : Colors.white),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected
+                      ? (isDark
+                            ? const Color(0xFF3cad2a).withOpacity(0.2)
+                            : const Color(0xFF062c6b).withOpacity(0.2))
+                      : (isDark
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.black.withOpacity(0.1)),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    status['icon'] as IconData,
+                    size: 18,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark
+                              ? const Color(0xFFf9fafb)
+                              : const Color(0xFF1a1a1a)),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    status['name'] as String,
+                    style: TextStyle(
+                      color: isSelected
+                          ? Colors.white
+                          : (isDark
+                                ? const Color(0xFFf9fafb)
+                                : const Color(0xFF1a1a1a)),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 13,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(bool isDark, AppSettingsProvider settings) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextField(
+        style: TextStyle(
+          color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+          fontFamily: 'Poppins',
+        ),
+        decoration: InputDecoration(
+          hintText: settings.t('searchOrders'),
+          hintStyle: const TextStyle(
+            color: Color(0xFF9ca3af),
+            fontFamily: 'Poppins',
+          ),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: Color(0xFF9ca3af),
+            size: 20,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
           ),
         ),
-        child: Row(
+        onChanged: (value) {
+          setState(() {
+            searchQuery = value;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildOrdersList(
+    String status,
+    List<RestaurantOrder> allOrders,
+    bool isDark,
+    AppSettingsProvider settings,
+  ) {
+    final orders = allOrders.where((order) {
+      final matchesStatus =
+          status == 'all' || order.status.toLowerCase() == status.toLowerCase();
+      final matchesSearch =
+          order.studentName.toLowerCase().contains(searchQuery.toLowerCase()) ||
+          order.id.toLowerCase().contains(searchQuery.toLowerCase());
+      return matchesStatus && matchesSearch;
+    }).toList();
+
+    if (orders.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? Colors.white : Colors.white70,
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.inbox_rounded,
+                size: 64,
+                color: const Color(0xFF9ca3af).withOpacity(0.5),
+              ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(height: 24),
             Text(
-              displayLabel,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.white70,
-                fontWeight: FontWeight.w600,
+              '${settings.t('no')} ${settings.t(status)} ${settings.t('orders')}',
+              style: const TextStyle(
+                color: Color(0xFF9ca3af),
+                fontSize: 16,
                 fontFamily: 'Poppins',
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
         ),
-      ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        return _buildOrderCard(orders[index], isDark, settings);
+      },
     );
   }
 
-  Widget _buildOrderCard(RestaurantOrder order, AppSettingsProvider settings) {
-    // Helper to calculate item count
-    int itemCount = 0;
-    order.items.forEach((key, item) {
-      itemCount += (item['quantity'] as num).toInt();
-    });
-
-    // Helper for status color
-    Color statusColor;
-    switch (order.status.toLowerCase()) {
-      case 'pending':
-        statusColor = const Color(0xFFf59e0b);
-        break;
-      case 'accepted':
-        statusColor = const Color(0xFF3cad2a);
-        break;
-      case 'refused':
-        statusColor = const Color(0xFFef4444);
-        break;
-      default:
-        statusColor = Colors.grey;
-    }
+  Widget _buildOrderCard(
+    RestaurantOrder order,
+    bool isDark,
+    AppSettingsProvider settings,
+  ) {
+    final status = order.status;
+    final items = order.items;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1f2e),
+        color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : const Color(0xFF062c6b).withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: Avatar + Name + Status Badge
+          // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF0e1116),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF0e1116)
+                          : const Color(0xFFf3f4f6),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.person, color: Colors.white70),
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: isDark
+                          ? const Color(0xFF9ca3af)
+                          : const Color(0xFF4b5563),
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    order.studentName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        order.studentName,
+                        style: TextStyle(
+                          color: isDark
+                              ? const Color(0xFFf9fafb)
+                              : const Color(0xFF111827),
+                          fontFamily: 'Poppins',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                    ],
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: statusColor.withOpacity(0.3)),
-                ),
-                child: Text(
-                  order.status.toUpperCase(),
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-              ),
+              _buildStatusBadge(status, settings),
             ],
           ),
-
-          const SizedBox(height: 16),
-          const Divider(color: Colors.white10),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // Items
-          ...order.items.entries.map((entry) {
-            final item = entry.value;
-            final name = item['name'] is Map
-                ? (item['name']['en'] ?? item['name'].toString())
+          ...items.entries.map((entry) {
+            final item = entry.value as Map<String, dynamic>;
+            final quantity = (item['quantity'] as num?)?.toInt() ?? 1;
+            final price = (item['price'] as num?)?.toDouble() ?? 0.0;
+            final itemName = (item['name'] is Map)
+                ? (item['name'][settings.language] ?? item['name']['en'])
                 : item['name'].toString();
-            final price = (item['price'] as num).toDouble();
-            final quantity = (item['quantity'] as num).toInt();
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0e1116),
-                      borderRadius: BorderRadius.circular(6),
+                      color: isDark
+                          ? const Color(0xFF0e1116)
+                          : const Color(0xFFf3f4f6),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      '${quantity}x',
-                      style: const TextStyle(
-                        color: Color(0xFF3cad2a),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        fontFamily: 'Poppins',
+                    child: Center(
+                      child: Text(
+                        '${quantity}x',
+                        style: TextStyle(
+                          color: isDark
+                              ? const Color(0xFF3cad2a)
+                              : const Color(0xFF062c6b),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                          itemName,
+                          style: TextStyle(
+                            color: isDark
+                                ? const Color(0xFFf9fafb)
+                                : const Color(0xFF111827),
                             fontFamily: 'Poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '\$${price.toStringAsFixed(2)} • ${order.pickupTime} • ${order.type}',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 12,
-                            fontFamily: 'Poppins',
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              '\$${price.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                color: isDark
+                                    ? const Color(0xFF9ca3af)
+                                    : const Color(0xFF6b7280),
+                                fontFamily: 'Poppins',
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 4,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: isDark ? Colors.white24 : Colors.black26,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.schedule_rounded,
+                              size: 12,
+                              color: isDark ? Colors.white54 : Colors.black54,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              order.pickupTime,
+                              style: TextStyle(
+                                color: isDark ? Colors.white54 : Colors.black54,
+                                fontSize: 12,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 4,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: isDark ? Colors.white24 : Colors.black26,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              order.type,
+                              style: TextStyle(
+                                color: isDark ? Colors.white54 : Colors.black54,
+                                fontSize: 12,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
+                  if (status == 'pending')
+                    IconButton(
+                      onPressed: () => DatabaseService().removeItemFromOrder(
+                        order.id,
+                        entry.key,
+                      ),
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      color: const Color(0xFFef4444),
+                      style: IconButton.styleFrom(
+                        backgroundColor: const Color(
+                          0xFFef4444,
+                        ).withOpacity(0.1),
+                        padding: const EdgeInsets.all(8),
+                      ),
+                    ),
                 ],
               ),
             );
           }),
 
-          const SizedBox(height: 8),
-          const Divider(color: Colors.white10),
-          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Divider(
+              color: isDark
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.05),
+              height: 1,
+            ),
+          ),
 
-          // Footer: Time and Total Price
+          // Footer
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
                   Icon(
-                    Icons.access_time_rounded,
+                    Icons.schedule_rounded,
+                    color: isDark
+                        ? const Color(0xFF9ca3af)
+                        : const Color(0xFF6b7280),
                     size: 16,
-                    color: Colors.grey[500],
                   ),
                   const SizedBox(width: 6),
                   Text(
                     order.pickupTime,
                     style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 13,
+                      color: isDark
+                          ? const Color(0xFF9ca3af)
+                          : const Color(0xFF6b7280),
                       fontFamily: 'Poppins',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Text('•', style: TextStyle(color: Colors.grey[500])),
                   const SizedBox(width: 8),
                   Text(
                     order.type,
                     style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 13,
+                      color: isDark
+                          ? const Color(0xFF9ca3af)
+                          : const Color(0xFF6b7280),
                       fontFamily: 'Poppins',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
               Text(
                 '\$${order.total.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  color: Color(0xFF3cad2a),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                style: TextStyle(
+                  color: isDark
+                      ? const Color(0xFF3cad2a)
+                      : const Color(0xFF062c6b),
                   fontFamily: 'Poppins',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
 
-          // Action Buttons (Only for Pending)
-          if (order.status.toLowerCase() == 'pending')
-            Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => _updateStatus(order.id, 'refused'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFFef4444),
-                    ),
-                    child: const Text('Refuse'),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () => _updateStatus(order.id, 'accepted'),
+          // Action buttons for pending orders
+          if (status == 'pending') ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      DatabaseService().updateOrderStatus(order.id, 'accepted');
+                    },
+                    icon: const Icon(Icons.check_circle_rounded, size: 16),
+                    label: Text(settings.t('accept')),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3cad2a),
                       foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('Accept'),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showRefuseDialog(order, settings, isDark),
+                    icon: const Icon(Icons.cancel_rounded, size: 16),
+                    label: Text(settings.t('refuse')),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFef4444),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
+          ],
         ],
       ),
     );
   }
 
-  void _updateStatus(String orderId, String newStatus) {
-    DatabaseService().updateOrderStatus(orderId, newStatus);
+  Widget _buildStatusBadge(String status, AppSettingsProvider settings) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: _getStatusColor(status).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _getStatusColor(status).withOpacity(0.2)),
+      ),
+      child: Text(
+        settings.t(status).toUpperCase(),
+        style: TextStyle(
+          color: _getStatusColor(status),
+          fontFamily: 'Poppins',
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'pending':
+        return const Color(0xFFf59e0b);
+      case 'accepted':
+        return const Color(0xFF3cad2a);
+      case 'refused':
+        return const Color(0xFFef4444);
+      default:
+        return const Color(0xFF9ca3af);
+    }
+  }
+
+  void _showRefuseDialog(
+    RestaurantOrder order,
+    AppSettingsProvider settings,
+    bool isDark,
+  ) {
+    final messageController = TextEditingController();
+    String? selectedTime;
+    final List<String> timeSlots = [
+      '08:00',
+      '08:30',
+      '09:00',
+      '09:30',
+      '10:00',
+      '10:30',
+      '11:00',
+      '11:30',
+      '12:00',
+      '12:30',
+      '13:00',
+      '13:30',
+      '14:00',
+      '14:30',
+      '15:00',
+      '15:30',
+      '16:00',
+      '16:30',
+      '17:00',
+      '17:30',
+      '18:00',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+              title: Text(
+                settings.t('respondToOrder'),
+                style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      settings.t('suggestAlternativeTime'),
+                      style: TextStyle(
+                        color: isDark ? Colors.grey : Colors.grey[700],
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF0e1116)
+                            : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButton<String>(
+                        value: selectedTime,
+                        hint: Text(
+                          settings.t('selectTimeSlot'),
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        isExpanded: true,
+                        dropdownColor: isDark
+                            ? const Color(0xFF1a1f2e)
+                            : Colors.white,
+                        underline: const SizedBox(),
+                        items: timeSlots
+                            .map(
+                              (time) => DropdownMenuItem(
+                                value: time,
+                                child: Text(time),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) =>
+                            setDialogState(() => selectedTime = value),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      settings.t('message'),
+                      style: TextStyle(
+                        color: isDark ? Colors.grey : Colors.grey[700],
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: messageController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: settings.t('typeMessage'),
+                        filled: true,
+                        fillColor: isDark
+                            ? const Color(0xFF0e1116)
+                            : Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    settings.t('cancel'),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final message = messageController.text.trim();
+                    final timeInfo = selectedTime != null
+                        ? ' (${settings.t('suggestedTime')}: $selectedTime)'
+                        : '';
+                    Navigator.pop(context);
+                    DatabaseService().updateOrderStatus(
+                      order.id,
+                      'refused',
+                      feedback: '$message$timeInfo',
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '${settings.t('orderFrom')} ${order.studentName} refused',
+                        ),
+                        backgroundColor: const Color(0xFFef4444),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFef4444),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(settings.t('refuse')),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }

@@ -4,23 +4,25 @@ class AppSettingsProvider extends ChangeNotifier {
   // Theme Mode
   ThemeMode _themeMode = ThemeMode.dark;
   ThemeMode get themeMode => _themeMode;
-  
+
   bool get isDarkMode => _themeMode == ThemeMode.dark;
-  
+
   void toggleTheme() {
-    _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    _themeMode = _themeMode == ThemeMode.dark
+        ? ThemeMode.light
+        : ThemeMode.dark;
     notifyListeners();
   }
-  
+
   // Language
   String _language = 'en';
   String get language => _language;
-  
+
   void setLanguage(String lang) {
     _language = lang;
     notifyListeners();
   }
-  
+
   // Translations
   Map<String, Map<String, String>> translations = {
     'en': {
@@ -53,7 +55,8 @@ class AppSettingsProvider extends ChangeNotifier {
       'suggestAlternativeTime': 'Suggest Alternative Time (Optional)',
       'selectTimeSlot': 'Select time slot...',
       'typeMessage': 'Type your message here...',
-      'studentNotification': 'The student will receive your message as a notification',
+      'studentNotification':
+          'The student will receive your message as a notification',
       'messageSent': 'Message sent to',
       'addNewProduct': 'Add New Product',
       'editProduct': 'Edit Product',
@@ -118,10 +121,12 @@ class AppSettingsProvider extends ChangeNotifier {
       'lightMode': 'Light Mode',
       'darkMode': 'Dark Mode',
       'orderNumber': 'Order #',
-      'acceptOrderConfirmation': 'Are you sure you want to accept the order from',
+      'acceptOrderConfirmation':
+          'Are you sure you want to accept the order from',
       'orderFrom': 'Order from',
       'acceptedSuffix': 'accepted',
-      'refuseOrderConfirmation': 'Are you sure you want to refuse the order from',
+      'refuseOrderConfirmation':
+          'Are you sure you want to refuse the order from',
       'refusedSuffix': 'refused',
       'productAdded': 'Product added successfully',
       'productUpdated': 'Product updated successfully',
@@ -135,6 +140,16 @@ class AppSettingsProvider extends ChangeNotifier {
       'contactIT': 'Please contact IT support to reset your password.',
       'securedBy': 'Secured by UEMF IT',
       'invalidCredentials': 'Invalid username or password',
+      'respondToOrder': 'Respond to Order',
+      'filterByStatus': 'Filter by Status',
+      'filterBy': 'Filter by',
+      'totalVotes': 'Total Votes',
+      'topRequested': 'Top Requested',
+      'noItemsFound': 'No items found',
+      'changeImage': 'Change Image',
+      'itemUpdated': 'Item updated',
+      'itemDeleted': 'Item deleted',
+      'all': 'All',
     },
     'fr': {
       'ordersOfTheDay': 'Commandes du jour',
@@ -166,7 +181,8 @@ class AppSettingsProvider extends ChangeNotifier {
       'suggestAlternativeTime': 'Suggérer un autre horaire (Optionnel)',
       'selectTimeSlot': 'Sélectionner un créneau...',
       'typeMessage': 'Tapez votre message ici...',
-      'studentNotification': "L'étudiant recevra votre message sous forme de notification",
+      'studentNotification':
+          "L'étudiant recevra votre message sous forme de notification",
       'messageSent': 'Message envoyé à',
       'addNewProduct': 'Ajouter un produit',
       'editProduct': 'Modifier le produit',
@@ -231,10 +247,12 @@ class AppSettingsProvider extends ChangeNotifier {
       'lightMode': 'Mode clair',
       'darkMode': 'Mode sombre',
       'orderNumber': 'Commande #',
-      'acceptOrderConfirmation': 'Êtes-vous sûr de vouloir accepter la commande de',
+      'acceptOrderConfirmation':
+          'Êtes-vous sûr de vouloir accepter la commande de',
       'orderFrom': 'Commande de',
       'acceptedSuffix': 'acceptée',
-      'refuseOrderConfirmation': 'Êtes-vous sûr de vouloir refuser la commande de',
+      'refuseOrderConfirmation':
+          'Êtes-vous sûr de vouloir refuser la commande de',
       'refusedSuffix': 'refusée',
       'productAdded': 'Produit ajouté avec succès',
       'productUpdated': 'Produit mis à jour avec succès',
@@ -245,9 +263,20 @@ class AppSettingsProvider extends ChangeNotifier {
       'dinner': 'Dîner',
       'accessDenied': 'Accès refusé. Privilèges administrateur requis.',
       'required': 'Requis',
-      'contactIT': 'Veuillez contacter le support informatique pour réinitialiser votre mot de passe.',
+      'contactIT':
+          'Veuillez contacter le support informatique pour réinitialiser votre mot de passe.',
       'securedBy': 'Sécurisé par UEMF IT',
       'invalidCredentials': 'Nom d\'utilisateur ou mot de passe invalide',
+      'respondToOrder': 'Répondre à la commande',
+      'filterByStatus': 'Filtrer par statut',
+      'filterBy': 'Filtrer par',
+      'totalVotes': 'Total des votes',
+      'topRequested': 'Le plus demandé',
+      'noItemsFound': 'Aucun article trouvé',
+      'changeImage': 'Changer l\'image',
+      'itemUpdated': 'Article mis à jour',
+      'itemDeleted': 'Article supprimé',
+      'all': 'Tout',
     },
     'ar': {
       'ordersOfTheDay': 'طلبات اليوم',
@@ -361,33 +390,55 @@ class AppSettingsProvider extends ChangeNotifier {
       'contactIT': 'يرجى الاتصال بالدعم الفني لإعادة تعيين كلمة المرور.',
       'securedBy': 'مؤمن بواسطة UEMF IT',
       'invalidCredentials': 'اسم المستخدم أو كلمة المرور غير صحيحة',
+      'respondToOrder': 'الرد على الطلب',
+      'filterByStatus': 'تصفية حسب الحالة',
+      'filterBy': 'تصفية حسب',
+      'totalVotes': 'إجمالي الأصوات',
+      'topRequested': 'الأكثر طلباً',
+      'noItemsFound': 'لم يتم العثور على عناصر',
+      'changeImage': 'تغيير الصورة',
+      'itemUpdated': 'تم تحديث العنصر',
+      'itemDeleted': 'تم حذف العنصر',
+      'all': 'الكل',
     },
   };
-  
+
   String t(String key) {
     return translations[_language]?[key] ?? key;
   }
-  
+
   // Categories with translations
   List<Map<String, dynamic>> get categories => [
     {
       'id': 'all',
       'name': {'en': 'All', 'fr': 'Tout', 'ar': 'الكل'},
-      'icon': Icons.restaurant_menu_rounded,
+      'icon': Icons.grid_view_rounded,
     },
     {
       'id': 'hot-drinks',
-      'name': {'en': 'Hot Drinks', 'fr': 'Boissons chaudes', 'ar': 'مشروبات ساخنة'},
+      'name': {
+        'en': 'Hot Drinks',
+        'fr': 'Boissons chaudes',
+        'ar': 'مشروبات ساخنة',
+      },
       'icon': Icons.coffee_rounded,
     },
     {
       'id': 'cold-drinks',
-      'name': {'en': 'Cold Drinks', 'fr': 'Boissons froides', 'ar': 'مشروبات باردة'},
+      'name': {
+        'en': 'Cold Drinks',
+        'fr': 'Boissons froides',
+        'ar': 'مشروبات باردة',
+      },
       'icon': Icons.local_drink_rounded,
     },
     {
       'id': 'cakes-desserts',
-      'name': {'en': 'Cakes & Desserts', 'fr': 'Gâteaux & desserts', 'ar': 'كعك وحلويات'},
+      'name': {
+        'en': 'Cakes & Desserts',
+        'fr': 'Gâteaux & desserts',
+        'ar': 'كعك وحلويات',
+      },
       'icon': Icons.cake_rounded,
     },
     {
@@ -397,7 +448,11 @@ class AppSettingsProvider extends ChangeNotifier {
     },
     {
       'id': 'pizza-pasta',
-      'name': {'en': 'Pizza & Pasta', 'fr': 'Pizza & pâtes', 'ar': 'بيتزا ومعكرونة'},
+      'name': {
+        'en': 'Pizza & Pasta',
+        'fr': 'Pizza & pâtes',
+        'ar': 'بيتزا ومعكرونة',
+      },
       'icon': Icons.local_pizza_rounded,
     },
     {
@@ -413,12 +468,12 @@ class AppSettingsProvider extends ChangeNotifier {
     {
       'id': 'salads',
       'name': {'en': 'Salads', 'fr': 'Salades', 'ar': 'سلطات'},
-      'icon': Icons.rice_bowl_rounded,
+      'icon': Icons.eco_rounded,
     },
     {
       'id': 'dairy',
       'name': {'en': 'Dairy', 'fr': 'Laitage', 'ar': 'ألبان'},
-      'icon': Icons.icecream_rounded,
+      'icon': Icons.egg_rounded,
     },
     {
       'id': 'snacks',
@@ -426,11 +481,13 @@ class AppSettingsProvider extends ChangeNotifier {
       'icon': Icons.fastfood_rounded,
     },
   ];
-  
+
   String getCategoryName(String categoryId) {
     final category = categories.firstWhere(
       (cat) => cat['id'] == categoryId,
-      orElse: () => {'name': {'en': categoryId, 'fr': categoryId, 'ar': categoryId}},
+      orElse: () => {
+        'name': {'en': categoryId, 'fr': categoryId, 'ar': categoryId},
+      },
     );
     return category['name'][_language] ?? categoryId;
   }
