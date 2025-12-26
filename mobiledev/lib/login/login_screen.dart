@@ -310,19 +310,16 @@ class _LoginScreenState extends State<LoginScreen>
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Image.asset(
-            'assets/images/logo.png',
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return const Icon(
-                Icons.restaurant_menu_rounded,
-                size: 40,
-                color: Colors.white,
-              );
-            },
-          ),
+        child: Image.asset(
+          'assets/images/logo.png',
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(
+              Icons.restaurant_menu_rounded,
+              size: 40,
+              color: Colors.white,
+            );
+          },
         ),
       ),
     );

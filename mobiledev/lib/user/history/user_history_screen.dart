@@ -214,7 +214,7 @@ class UserHistoryScreen extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        '\$${(price * quantity).toStringAsFixed(2)}',
+                                        '${(price * quantity).toStringAsFixed(2)} MAD',
                                         style: const TextStyle(
                                           color: Color(0xFF3cad2a),
                                           fontWeight: FontWeight.bold,
@@ -245,7 +245,7 @@ class UserHistoryScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '\$${total.toStringAsFixed(2)}',
+                                '${total.toStringAsFixed(2)} MAD',
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -447,7 +447,7 @@ class UserHistoryScreen extends StatelessWidget {
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                           Text(
-                            '\$${total.toStringAsFixed(2)}',
+                            '${total.toStringAsFixed(2)} MAD',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF3cad2a),

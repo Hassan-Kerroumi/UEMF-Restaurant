@@ -407,7 +407,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                         ),
                         // Price
                         Text(
-                          '\$${product.price.toStringAsFixed(2)}',
+                          '${product.price.toStringAsFixed(2)} MAD',
                           style: TextStyle(
                             color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                             fontSize: 18,

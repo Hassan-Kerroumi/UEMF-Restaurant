@@ -101,7 +101,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '\$$price',
+                  '$price MAD',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -347,7 +347,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                     ),
                   ),
                   Text(
-                    '\$${(price * _quantity).toStringAsFixed(2)}',
+                    '${(price * _quantity).toStringAsFixed(2)} MAD',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

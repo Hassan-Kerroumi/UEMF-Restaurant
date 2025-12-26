@@ -175,7 +175,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
       },
       {
         'title': settings.t('revenue'),
-        'value': '\$${NumberFormat.compact().format(totalRevenue)}',
+        'value': '${NumberFormat.compact().format(totalRevenue)} MAD',
         'subtitle': '${totalRevenue > 0 ? '+' : ''}10% ${settings.t('fromYesterday')}', // Simplified
         'color': const Color(0xFF062c6b),
         'icon': Icons.trending_up_rounded,
@@ -515,7 +515,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
             ? (item['name'][settings.language] ?? item['name']['en']) 
             : item['name'].toString();
         final quantity = (item['quantity'] as num?)?.toInt() ?? 1;
-        itemCounts[name] = (itemCounts[name] ?? 0) + quantity;
+        itemCounts[name] = (itemCounts[name] ?? 0) + 1; // Count number of orders, not total quantity
       }
     }
 

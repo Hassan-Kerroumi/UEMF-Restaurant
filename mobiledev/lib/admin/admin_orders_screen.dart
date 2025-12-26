@@ -426,7 +426,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                         Row(
                           children: [
                             Text(
-                              '\$${price.toStringAsFixed(2)}',
+                              '${price.toStringAsFixed(2)} MAD',
                               style: TextStyle(
                                 color: isDark
                                     ? const Color(0xFF9ca3af)
@@ -552,7 +552,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 ],
               ),
               Text(
-                '\$${order.total.toStringAsFixed(2)}',
+                '${order.total.toStringAsFixed(2)} MAD',
                 style: TextStyle(
                   color: isDark
                       ? const Color(0xFF3cad2a)

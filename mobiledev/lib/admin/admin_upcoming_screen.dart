@@ -308,26 +308,25 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
 
   Widget _buildTomorrowMenu(bool isDark, List<UpcomingMeal> meals) {
     final settings = Provider.of<AppSettingsProvider>(context, listen: false);
+    
+    final breakfastMeals = meals.where((m) => m.category == 'breakfast').toList();
+    final lunchMeals = meals.where((m) => m.category == 'lunch').toList();
+    final dinnerMeals = meals.where((m) => m.category == 'dinner').toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              settings.t('tomorrowsMenu'),
-              style: TextStyle(
-                color: isDark
-                    ? const Color(0xFFf9fafb)
-                    : const Color(0xFF1a1a1a),
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Poppins',
-              ),
-            ),
-          ],
+        Text(
+          settings.t('tomorrowsMenu'),
+          style: TextStyle(
+            color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Poppins',
+          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 24),
+        
         if (meals.isEmpty)
           Center(
             child: Padding(
@@ -353,21 +352,62 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
               ),
             ),
           )
-        else
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.70, // Slightly taller for buttons
-            ),
-            itemCount: meals.length,
-            itemBuilder: (context, index) {
-              return _buildTomorrowMenuCard(meals[index], isDark);
-            },
+        else ...[
+          _buildCategorySection(settings.t('breakfast'), breakfastMeals, isDark),
+          _buildCategorySection(settings.t('lunch'), lunchMeals, isDark),
+          _buildCategorySection(settings.t('dinner'), dinnerMeals, isDark),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCategorySection(String title, List<UpcomingMeal> meals, bool isDark) {
+    if (meals.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title.toUpperCase(),
+                style: TextStyle(
+                  color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Poppins',
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
           ),
+        ),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 0.70,
+          ),
+          itemCount: meals.length,
+          itemBuilder: (context, index) {
+            return _buildTomorrowMenuCard(meals[index], isDark);
+          },
+        ),
+        const SizedBox(height: 24),
       ],
     );
   }
@@ -527,7 +567,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '\$${item.price}',
+                        '${item.price} MAD',
                         style: TextStyle(
                           color: isDark
                               ? const Color(0xFF3cad2a)

@@ -523,7 +523,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '\$${product.price.toStringAsFixed(2)}',
+                            '${product.price.toStringAsFixed(2)} MAD',
                             style: TextStyle(
                               color: isDark
                                   ? const Color(0xFF3cad2a)

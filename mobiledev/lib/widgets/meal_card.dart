@@ -83,7 +83,7 @@ class MealCard extends StatelessWidget {
                         ]
                       ),
                       child: Text(
-                        '\$${meal.price.toStringAsFixed(0)}', 
+                        '${meal.price.toStringAsFixed(0)} MAD',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
