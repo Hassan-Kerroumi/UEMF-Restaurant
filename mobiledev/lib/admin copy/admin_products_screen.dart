@@ -1,11 +1,8 @@
-import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
-import '../services/database_service.dart';
-import '../data/meal_model.dart';
 
 class AdminProductsScreen extends StatefulWidget {
   const AdminProductsScreen({super.key});
@@ -18,9 +15,46 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
   String searchQuery = '';
   String? selectedCategory;
   final ImagePicker _picker = ImagePicker();
-  final DatabaseService _db = DatabaseService();
-  bool _isLoading = false;
- 
+  
+  // Mock products data (moved to state to allow modification)
+  List<Map<String, dynamic>> products = [
+    {
+      'id': '1',
+      'name': 'Espresso',
+      'nameFr': 'Espresso',
+      'nameAr': 'إسبريسو',
+      'category': 'hot-drinks',
+      'price': 5.0,
+      'image': 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=400',
+    },
+    {
+      'id': '2',
+      'name': 'Cappuccino',
+      'nameFr': 'Cappuccino',
+      'nameAr': 'كابتشينو',
+      'category': 'hot-drinks',
+      'price': 6.0,
+      'image': 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400',
+    },
+    {
+      'id': '3',
+      'name': 'Croissant',
+      'nameFr': 'Croissant',
+      'nameAr': 'كرواسون',
+      'category': 'pastry',
+      'price': 3.5,
+      'image': 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400',
+    },
+    {
+      'id': '4',
+      'name': 'Sandwich',
+      'nameFr': 'Sandwich',
+      'nameAr': 'ساندويتش',
+      'category': 'lunch',
+      'price': 8.0,
+      'image': 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -219,255 +253,182 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
   }
   
   Widget _buildProductsGrid(bool isDark, AppSettingsProvider settings) {
-    return StreamBuilder<List<Meal>>(
-      stream: _db.getMeals(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        
-        final allProducts = snapshot.data ?? [];
-        final filteredProducts = allProducts.where((product) {
-          final matchesSearch = (product.name['en'] ?? '').toLowerCase().contains(searchQuery.toLowerCase()) ||
-                              (product.name['fr'] ?? '').toLowerCase().contains(searchQuery.toLowerCase()) ||
-                              (product.name['ar'] ?? '').toLowerCase().contains(searchQuery.toLowerCase());
-          final matchesCategory = selectedCategory == null || selectedCategory == 'all' || product.category == selectedCategory;
-          return matchesSearch && matchesCategory;
-        }).toList();
-
-        if (filteredProducts.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Text(
-                settings.t('noProductsFound'),
-                style: TextStyle(
-                  color: isDark ? Colors.white70 : Colors.black54,
-                  fontSize: 16,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-            ),
-          );
-        }
-        
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.75,
-          ),
-          itemCount: filteredProducts.length,
-          itemBuilder: (context, index) {
-            return _buildProductCard(filteredProducts[index], isDark);
-          },
-        );
+    final filteredProducts = products.where((product) {
+      final matchesSearch = (product['name'] as String).toLowerCase().contains(searchQuery.toLowerCase()) ||
+                          (product['nameFr'] as String).toLowerCase().contains(searchQuery.toLowerCase()) ||
+                          (product['nameAr'] as String).toLowerCase().contains(searchQuery.toLowerCase());
+      final matchesCategory = selectedCategory == null || selectedCategory == 'all' || product['category'] == selectedCategory;
+      return matchesSearch && matchesCategory;
+    }).toList();
+    
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: filteredProducts.length,
+      itemBuilder: (context, index) {
+        return _buildProductCard(filteredProducts[index], isDark);
       },
     );
   }
   
-  // In lib/admin/admin_products_screen.dart
+  Widget _buildProductCard(Map<String, dynamic> product, bool isDark) {
+    final image = product['image'];
+    final isFileImage = image is File;
 
-  // 1. Helper to handle network images, base64, and placeholders cleanly
-  Widget _buildProductImage(String? imageUrl) {
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return Container(
-        width: double.infinity,
-        color: Colors.grey.withOpacity(0.1),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.fastfood_rounded, size: 40, color: Colors.grey.withOpacity(0.5)),
-            const SizedBox(height: 4),
-            Text("No Image", style: TextStyle(color: Colors.grey.withOpacity(0.5), fontSize: 10)),
-          ],
-        ),
-      );
-    }
-
-    try {
-      // Handle Base64 images (if any)
-      if (imageUrl.startsWith('data:image')) {
-        return Image.memory(
-          base64Decode(imageUrl.split(',')[1]),
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.broken_image_rounded)),
-        );
-      }
-      // Handle Network images (Firebase/Unsplash)
-      return Image.network(
-        imageUrl,
-        fit: BoxFit.cover,
-        width: double.infinity,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Center(
-            child: SizedBox(
-              width: 20, height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.grey),
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                    : null,
-              ),
-            ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          // If the URL is bad, show a broken link icon
-          return Center(child: Icon(Icons.broken_image_rounded, color: Colors.grey.withOpacity(0.5)));
-        },
-      );
-    } catch (e) {
-      return const Center(child: Icon(Icons.error_outline_rounded));
-    }
-  }
-
-  // 2. The Creative Card Design
-  Widget _buildProductCard(Meal product, bool isDark) {
-    final settings = Provider.of<AppSettingsProvider>(context, listen: false);
-    
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-            blurRadius: 15,
+            color: isDark ? Colors.black.withOpacity(0.2) : const Color(0xFF062c6b).withOpacity(0.08),
+            blurRadius: 20,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Image Area (Top 60%)
-                Expanded(
-                  flex: 3,
-                  child: _buildProductImage(product.imageUrl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              Container(
+                height: 120,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF9ca3af).withOpacity(0.1),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                  image: image != null
+                      ? DecorationImage(
+                          image: isFileImage 
+                              ? FileImage(image as File) 
+                              : NetworkImage(image as String) as ImageProvider,
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                
-                // Info Area (Bottom 40%)
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Category Badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                product.category.toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            // Product Name
-                            Text(
-                              product.name[settings.language] ?? product.name['en'] ?? '',
-                              style: TextStyle(
-                                color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                fontFamily: 'Poppins',
-                                height: 1.1,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                child: image == null
+                    ? Center(
+                        child: Icon(
+                          Icons.fastfood_rounded,
+                          size: 40,
+                          color: const Color(0xFF9ca3af).withOpacity(0.5),
+                        ),
+                      )
+                    : null,
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => _editProduct(product),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
-                        // Price
-                        Text(
-                          '\$${product.price.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            fontFamily: 'Poppins',
-                          ),
+                        child: const Icon(
+                          Icons.edit_rounded,
+                          size: 16,
+                          color: Color(0xFF3b82f6),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // Floating Edit/Delete Actions (Glassmorphism)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    InkWell(
-                      onTap: () => _editProduct(product),
-                      child: const Padding(
-                        padding: EdgeInsets.all(4),
-                        child: Icon(Icons.edit_rounded, size: 14, color: Colors.white),
                       ),
                     ),
-                    Container(width: 1, height: 12, color: Colors.white.withOpacity(0.3), margin: const EdgeInsets.symmetric(horizontal: 4)),
-                    InkWell(
+                    const SizedBox(width: 8),
+                    GestureDetector(
                       onTap: () => _deleteProduct(product),
-                      child: const Padding(
-                        padding: EdgeInsets.all(4),
-                        child: Icon(Icons.delete_rounded, size: 14, color: Color(0xFFff6b6b)),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.delete_rounded,
+                          size: 16,
+                          color: Color(0xFFef4444),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product['name'] as String,
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Poppins',
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  (product['category'] as String).toUpperCase(),
+                  style: const TextStyle(
+                    color: Color(0xFF9ca3af),
+                    fontSize: 10,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '\$${product['price']}',
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton(IconData icon, Color color, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: Icon(icon, size: 16, color: color),
+          ),
+        ],
       ),
     );
   }
@@ -476,12 +437,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     final nameController = TextEditingController();
     final nameFrController = TextEditingController();
     final nameArController = TextEditingController();
-    final descriptionController = TextEditingController();
     final priceController = TextEditingController();
     String selectedCat = 'hot-drinks';
-    Uint8List? selectedImageBytes;
-    String? selectedImageName;
-    bool isSaving = false;
+    File? selectedImage;
 
     showDialog(
       context: context,
@@ -510,10 +468,8 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                     onTap: () async {
                       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
                       if (image != null) {
-                        final bytes = await image.readAsBytes();
                         setDialogState(() {
-                          selectedImageBytes = bytes;
-                          selectedImageName = image.name;
+                          selectedImage = File(image.path);
                         });
                       }
                     },
@@ -526,14 +482,14 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                         border: Border.all(
                           color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
                         ),
-                        image: selectedImageBytes != null
-                                ? DecorationImage(
-                                    image: MemoryImage(selectedImageBytes!),
+                        image: selectedImage != null
+                            ? DecorationImage(
+                                image: FileImage(selectedImage!),
                                 fit: BoxFit.cover,
                               )
                             : null,
                       ),
-                      child: selectedImageBytes == null
+                      child: selectedImage == null
                           ? Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -563,8 +519,6 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   _buildTextField('${settings.t('productName')} (French)', nameFrController, isDark),
                   const SizedBox(height: 12),
                   _buildTextField('${settings.t('productName')} (Arabic)', nameArController, isDark),
-                  const SizedBox(height: 12),
-                  _buildTextField(settings.t('description') == 'description' ? 'Description' : settings.t('description'), descriptionController, isDark, maxLines: 2),
                   const SizedBox(height: 12),
                   _buildTextField(settings.t('price'), priceController, isDark, keyboardType: TextInputType.number),
                   const SizedBox(height: 12),
@@ -616,79 +570,38 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                 ),
               ),
               ElevatedButton(
+                onPressed: () {
+                  if (nameController.text.isEmpty || priceController.text.isEmpty) {
+                    return;
+                  }
+                  
+                  setState(() {
+                    products.add({
+                      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                      'name': nameController.text,
+                      'nameFr': nameFrController.text,
+                      'nameAr': nameArController.text,
+                      'category': selectedCat,
+                      'price': double.tryParse(priceController.text) ?? 0.0,
+                      'image': selectedImage,
+                    });
+                  });
+                  
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(settings.t('productAdded')),
+                      backgroundColor: const Color(0xFF3cad2a),
+                    ),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                onPressed: isSaving ? null : () async {
-                  if (nameController.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter a name'), backgroundColor: Colors.orange),
-                    );
-                    return;
-                  }
-                  final price = double.tryParse(priceController.text.trim());
-                  if (price == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter a valid price'), backgroundColor: Colors.orange),
-                    );
-                    return;
-                  }
-                  
-                  setDialogState(() => isSaving = true);
-                  final messenger = ScaffoldMessenger.of(context);
-                  
-                  try {
-                    // Create basic meal object without image first
-                    final newMeal = Meal(
-                      id: '', // Will be assigned by Firebase
-                      name: {
-                        'en': nameController.text,
-                        'fr': nameFrController.text,
-                        'ar': nameArController.text,
-                      },
-                      description: {'en': descriptionController.text.trim()}, 
-                      price: price,
-                      category: selectedCat,
-                      imageUrl: null,
-                    );
-                    
-                    // Add meal to database with image
-                    await _db.addMeal(newMeal, imageBytes: selectedImageBytes, imageName: selectedImageName);
-                    
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(settings.t('productAdded')),
-                          backgroundColor: const Color(0xFF3cad2a),
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      setDialogState(() => isSaving = false);
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text('Error: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                },
-                child: isSaving 
-                  ? const SizedBox(
-                      height: 24, 
-                      width: 24, 
-                      child: CircularProgressIndicator(
-                        color: Colors.white, 
-                        strokeWidth: 3,
-                      )
-                    )
-                  : Text(settings.t('save'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+                child: Text(settings.t('save'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
               ),
             ],
           );
@@ -697,17 +610,14 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     );
   }
   
-  void _editProduct(Meal product) {
-    final nameController = TextEditingController(text: product.name['en']);
-    final nameFrController = TextEditingController(text: product.name['fr']);
-    final nameArController = TextEditingController(text: product.name['ar']);
-    final descriptionController = TextEditingController(text: product.description['en'] ?? product.description['fr'] ?? '');
-    final priceController = TextEditingController(text: product.price.toString());
-    String selectedCat = product.category;
-    Uint8List? selectedImageBytes;
-    String? selectedImageName;
-    String? currentImageUrl = product.imageUrl;
-    bool isSaving = false;
+  void _editProduct(Map<String, dynamic> product) {
+    final nameController = TextEditingController(text: product['name']);
+    final nameFrController = TextEditingController(text: product['nameFr']);
+    final nameArController = TextEditingController(text: product['nameAr']);
+    final priceController = TextEditingController(text: product['price'].toString());
+    String selectedCat = product['category'];
+    dynamic currentImage = product['image'];
+    File? newImage;
 
     showDialog(
       context: context,
@@ -736,10 +646,8 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                     onTap: () async {
                       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
                       if (image != null) {
-                        final bytes = await image.readAsBytes();
                         setDialogState(() {
-                          selectedImageBytes = bytes;
-                          selectedImageName = image.name;
+                          newImage = File(image.path);
                         });
                       }
                     },
@@ -752,19 +660,21 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                         border: Border.all(
                           color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
                         ),
-                        image: selectedImageBytes != null
+                        image: newImage != null
                             ? DecorationImage(
-                                image: MemoryImage(selectedImageBytes!),
+                                image: FileImage(newImage!),
                                 fit: BoxFit.cover,
                               )
-                            : (currentImageUrl != null
+                            : (currentImage != null
                                 ? DecorationImage(
-                                    image: NetworkImage(currentImageUrl!),
+                                    image: currentImage is File 
+                                        ? FileImage(currentImage) 
+                                        : NetworkImage(currentImage as String) as ImageProvider,
                                     fit: BoxFit.cover,
                                   )
                                 : null),
                       ),
-                      child: (selectedImageBytes == null && currentImageUrl == null)
+                      child: (newImage == null && currentImage == null)
                           ? Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -775,7 +685,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  settings.t('changeImage'),
+                                  settings.t('uploadImage'),
                                   style: TextStyle(
                                     color: const Color(0xFF9ca3af).withOpacity(0.8),
                                     fontSize: 12,
@@ -795,11 +705,10 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   const SizedBox(height: 12),
                   _buildTextField('${settings.t('productName')} (Arabic)', nameArController, isDark),
                   const SizedBox(height: 12),
-                  _buildTextField(settings.t('description') == 'description' ? 'Description' : settings.t('description'), descriptionController, isDark, maxLines: 2),
-                  const SizedBox(height: 12),
                   _buildTextField(settings.t('price'), priceController, isDark, keyboardType: TextInputType.number),
                   const SizedBox(height: 12),
                   
+                  // Category Dropdown
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
@@ -846,77 +755,33 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                 ),
               ),
               ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    product['name'] = nameController.text;
+                    product['nameFr'] = nameFrController.text;
+                    product['nameAr'] = nameArController.text;
+                    product['price'] = double.tryParse(priceController.text) ?? 0.0;
+                    product['category'] = selectedCat;
+                    if (newImage != null) {
+                      product['image'] = newImage;
+                    }
+                  });
+                  
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(settings.t('productUpdated')),
+                      backgroundColor: const Color(0xFF3cad2a),
+                    ),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                onPressed: isSaving ? null : () async {
-                  if (nameController.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter a name'), backgroundColor: Colors.orange),
-                    );
-                    return;
-                  }
-                  final price = double.tryParse(priceController.text.trim());
-                  if (price == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter a valid price'), backgroundColor: Colors.orange),
-                    );
-                    return;
-                  }
-                  
-                  setDialogState(() => isSaving = true);
-                  final messenger = ScaffoldMessenger.of(context);
-                  
-                  try {
-                    final updatedMeal = product.copyWith(
-                      name: {
-                        'en': nameController.text,
-                        'fr': nameFrController.text,
-                        'ar': nameArController.text,
-                      },
-                      description: product.description.isEmpty 
-                          ? {'en': descriptionController.text.trim()}
-                          : {...product.description, 'en': descriptionController.text.trim()},
-                      price: price,
-                      category: selectedCat,
-                    );
-                    
-                    await _db.updateMeal(product.id, updatedMeal, newImageBytes: selectedImageBytes, newImageName: selectedImageName);
-                    
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(settings.t('productUpdated')),
-                          backgroundColor: const Color(0xFF3cad2a),
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      setDialogState(() => isSaving = false);
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text('Error: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                },
-                child: isSaving 
-                  ? const SizedBox(
-                      height: 24, 
-                      width: 24, 
-                      child: CircularProgressIndicator(
-                        color: Colors.white, 
-                        strokeWidth: 3,
-                      )
-                    )
-                  : Text(settings.t('save'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+                child: Text(settings.t('save'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
               ),
             ],
           );
@@ -924,83 +789,67 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
       ),
     );
   }
-
-  void _deleteProduct(Meal product) {
-    final settings = Provider.of<AppSettingsProvider>(context, listen: false);
-    final isDark = settings.isDarkMode;
-
+  
+  void _deleteProduct(Map<String, dynamic> product) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          settings.t('deleteProduct'),
-          style: TextStyle(
-            color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Text(
-          '${settings.t('deleteConfirmation')} "${product.name[settings.language] ?? product.name['en']}"?',
-          style: TextStyle(
-            color: isDark ? Colors.white70 : Colors.black87,
-            fontFamily: 'Poppins',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              settings.t('cancel'),
-              style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+      builder: (context) {
+        final settings = Provider.of<AppSettingsProvider>(context, listen: false);
+        final isDark = settings.isDarkMode;
+        
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF1a1f2e) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            settings.t('delete'),
+            style: TextStyle(
+              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w600,
             ),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              try {
-                await _db.deleteMeal(product.id);
-                
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(settings.t('productDeleted')),
-                      backgroundColor: const Color(0xFF3cad2a),
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error deleting product: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFef4444),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: Text(settings.t('delete'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+          content: Text(
+            settings.t('deleteConfirmation'),
+            style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                settings.t('cancel'),
+                style: const TextStyle(color: Color(0xFF9ca3af), fontFamily: 'Poppins'),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  products.remove(product);
+                });
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${product['name']} ${settings.t('productDeleted')}'),
+                    backgroundColor: const Color(0xFFef4444),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFef4444),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(settings.t('delete'), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+            ),
+          ],
+        );
+      },
     );
   }
   
-  Widget _buildTextField(String label, TextEditingController controller, bool isDark, {TextInputType? keyboardType, int maxLines = 1}) {
+  Widget _buildTextField(String label, TextEditingController controller, bool isDark, {TextInputType? keyboardType}) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      maxLines: maxLines,
       style: TextStyle(
         color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
         fontFamily: 'Poppins',

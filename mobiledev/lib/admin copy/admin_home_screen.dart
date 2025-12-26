@@ -3,9 +3,6 @@ import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../login/login_screen.dart';
 import 'message_dialog.dart';
-import '../services/database_service.dart';
-import '../data/order_model.dart';
-import '../scripts/seed_database.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -16,7 +13,32 @@ class AdminHomeScreen extends StatefulWidget {
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
   String searchQuery = '';
-  String selectedCategory = 'all';
+  String? selectedCategory;
+  
+  // Mock data moved to state
+  List<Map<String, dynamic>> orders = [
+    {
+      'id': '1',
+      'studentName': 'Ahmed Ali',
+      'status': 'pending',
+      'pickupTime': '12:30',
+      'type': 'dine-in',
+      'items': [
+        {'name': 'Espresso', 'price': 5.0, 'quantity': 2},
+        {'name': 'Croissant', 'price': 3.5, 'quantity': 1},
+      ],
+    },
+    {
+      'id': '2',
+      'studentName': 'Sara Ben',
+      'status': 'accepted',
+      'pickupTime': '13:00',
+      'type': 'pickup',
+      'items': [
+        {'name': 'Cappuccino', 'price': 6.0, 'quantity': 1},
+      ],
+    },
+  ];
   
   @override
   Widget build(BuildContext context) {
@@ -98,71 +120,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               settings.toggleTheme();
             },
           ),
-          
-          // Seed Database Button (for testing)
-          IconButton(
-            icon: Icon(
-              Icons.cloud_upload_rounded,
-              color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-            ),
-            tooltip: 'Seed Test Data',
-            onPressed: () async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Seed Test Data?'),
-                  content: const Text('This will populate your database with sample users, products, orders, and upcoming menu items.\n\nOnly do this ONCE on a fresh database!'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancel'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3cad2a),
-                      ),
-                      child: const Text('Seed Database'),
-                    ),
-                  ],
-                ),
-              );
-              
-              if (confirmed == true && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('🌱 Seeding database... Please wait'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-                
-                try {
-                  await DatabaseSeeder().seedDatabase();
-                  
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('✅ Database seeded successfully!'),
-                        backgroundColor: Color(0xFF3cad2a),
-                        duration: Duration(seconds: 3),
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('❌ Error seeding database: $e'),
-                        backgroundColor: Colors.red,
-                        duration: const Duration(seconds: 5),
-                      ),
-                    );
-                  }
-                }
-              }
-            },
-          ),
-          
           IconButton(
             icon: Icon(
               Icons.logout_rounded,
@@ -280,7 +237,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               return GestureDetector(
                 onTap: () {
                   setState(() {
-                    selectedCategory = isSelected ? 'all' : category['id'] as String;
+                    selectedCategory = isSelected ? null : category['id'] as String;
                   });
                 },
                 child: Container(
@@ -332,70 +289,15 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     final settings = Provider.of<AppSettingsProvider>(context);
     final isDark = settings.isDarkMode;
 
-    return StreamBuilder<List<RestaurantOrder>>(
-      stream: DatabaseService().getOrders(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final orders = snapshot.data ?? [];
-        if (orders.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Text(
-                'No orders found',
-                style: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  fontFamily: 'Poppins',
-                ),
-              ),
-            ),
-          );
-        }
-
-        // Apply filters locally (search and category)
-        final filteredOrders = orders.where((order) {
-          if (searchQuery.isEmpty) return true;
-          return order.studentName.toLowerCase().contains(searchQuery.toLowerCase()) ||
-                 order.id.contains(searchQuery);
-        }).toList();
-
-        // Sort: Pending first, then by date descending
-        filteredOrders.sort((a, b) {
-          if (a.status == 'pending' && b.status != 'pending') return -1;
-          if (a.status != 'pending' && b.status == 'pending') return 1;
-          return b.createdAt.compareTo(a.createdAt);
-        });
-
-        return Column(
-          children: filteredOrders.map((order) {
-            // Convert to Map for UI compatibility
-            final orderMap = {
-              'id': order.id,
-              'studentName': order.studentName,
-              'status': order.status,
-              'pickupTime': order.pickupTime,
-              'type': order.type,
-              'items': order.items.values.toList(), // Convert map values to list
-            };
-            return _buildOrderCard(orderMap, isDark);
-          }).toList(),
-        );
-      },
+    return Column(
+      children: orders.map((order) => _buildOrderCard(order, isDark)).toList(),
     );
   }
   
   Widget _buildOrderCard(Map<String, dynamic> order, bool isDark) {
     final settings = Provider.of<AppSettingsProvider>(context, listen: false);
     final status = order['status'] as String;
-    final items = (order['items'] as List).cast<Map<String, dynamic>>();
-
+    final items = order['items'] as List<Map<String, dynamic>>;
     final totalPrice = items.fold<double>(
       0.0,
       (sum, item) => sum + ((item['price'] as double) * (item['quantity'] as int)),
@@ -501,7 +403,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _getLocalizedName(item['name'], settings),
+                          item['name'] as String,
                           style: TextStyle(
                             color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF111827),
                             fontFamily: 'Poppins',
@@ -687,18 +589,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }
   }
   
-  String _getLocalizedName(dynamic nameData, AppSettingsProvider settings) {
-    if (nameData is Map) {
-      return nameData[settings.language] ?? nameData['en'] ?? nameData.values.first ?? '';
-    }
-    return nameData.toString();
-  }
-
   void _removeItem(Map<String, dynamic> order, int index) {
-    // TODO: Implement removing item from order in database
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Editing orders not supported yet')),
-    );
+    setState(() {
+      final items = order['items'] as List<Map<String, dynamic>>;
+      items.removeAt(index);
+      
+      // If no items left, maybe refuse order automatically or just leave empty?
+      // For now, we allow empty orders but you might want to handle this.
+    });
   }
 
   void _acceptOrder(Map<String, dynamic> order) {
@@ -730,7 +628,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                DatabaseService().updateOrderStatus(order['id'], 'accepted');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('${settings.t('orderFrom')} ${order['studentName']} ${settings.t('acceptedSuffix')}'),
@@ -751,8 +648,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
   
   void _refuseOrder(Map<String, dynamic> order) {
-    final TextEditingController feedbackController = TextEditingController();
-    
     showDialog(
       context: context,
       builder: (context) {
@@ -767,29 +662,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
             ),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${settings.t('refuseOrderConfirmation')} ${order['studentName']}?',
-                style: TextStyle(
-                  color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: feedbackController,
-                maxLines: 2,
-                decoration: InputDecoration(
-                  hintText: 'Reason or alternative suggestion...',
-                  hintStyle: TextStyle(fontSize: 14, color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  contentPadding: const EdgeInsets.all(12),
-                ),
-                style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black),
-              ),
-            ],
+          content: Text(
+            '${settings.t('refuseOrderConfirmation')} ${order['studentName']}?',
+            style: TextStyle(
+              color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
+            ),
           ),
           actions: [
             TextButton(
@@ -798,9 +675,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                final feedback = feedbackController.text.trim();
                 Navigator.pop(context);
-                DatabaseService().updateOrderStatus(order['id'], 'refused', feedback: feedback);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('${settings.t('orderFrom')} ${order['studentName']} ${settings.t('refusedSuffix')}'),

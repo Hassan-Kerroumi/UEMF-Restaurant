@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
+import '../services/database_service.dart';
+import '../data/order_model.dart';
+import 'package:intl/intl.dart';
 
 class AdminStatsScreen extends StatefulWidget {
   const AdminStatsScreen({super.key});
@@ -52,40 +55,61 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Key Metrics
-              _buildKeyMetrics(isDark, settings),
-              const SizedBox(height: 24),
-              
-              // Revenue Chart
-              _buildRevenueChart(isDark, settings),
-              const SizedBox(height: 24),
-              
-              if (timePeriod != 'year') ...[
-                // Most Ordered Items
-                _buildMostOrderedItems(isDark, settings),
-                const SizedBox(height: 24),
-                
-                // Orders by Time
-                _buildOrdersByTime(isDark, settings),
-                const SizedBox(height: 24),
+      body: StreamBuilder<List<RestaurantOrder>>(
+        stream: DatabaseService().getOrders(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          final allOrders = snapshot.data ?? [];
+          final filteredOrders = _filterOrdersByPeriod(allOrders);
+          
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Key Metrics
+                  _buildKeyMetrics(isDark, settings, filteredOrders, allOrders),
+                  const SizedBox(height: 24),
+                  
+                  // Revenue Chart
+                  _buildRevenueChart(isDark, settings, filteredOrders),
+                  const SizedBox(height: 24),
+                  
+                  if (timePeriod != 'year') ...[
+                    // Most Ordered Items
+                    _buildMostOrderedItems(isDark, settings, filteredOrders),
+                    const SizedBox(height: 24),
+                    
+                    // Orders by Time
+                    _buildOrdersByTime(isDark, settings, filteredOrders),
+                    const SizedBox(height: 24),
 
-                // Order Status Distribution (Pie Chart)
-                _buildOrderStatusDistribution(isDark, settings),
-              ],
-              
-              // Bottom padding for floating nav bar
-              const SizedBox(height: 80),
-            ],
-          ),
-        ),
+                    // Order Status Distribution (Pie Chart)
+                    _buildOrderStatusDistribution(isDark, settings, filteredOrders),
+                  ],
+                  
+                  // Bottom padding for floating nav bar
+                  const SizedBox(height: 80),
+                ],
+              ),
+            ),
+          );
+        }
       ),
     );
+  }
+
+  List<RestaurantOrder> _filterOrdersByPeriod(List<RestaurantOrder> orders) {
+    final now = DateTime.now();
+    if (timePeriod == 'month') {
+      return orders.where((o) => o.createdAt.month == now.month && o.createdAt.year == now.year).toList();
+    } else {
+      return orders.where((o) => o.createdAt.year == now.year).toList();
+    }
   }
   
   Widget _buildPeriodButton(String period, String label, bool isDark) {
@@ -119,36 +143,59 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     );
   }
   
-  Widget _buildKeyMetrics(bool isDark, AppSettingsProvider settings) {
+  Widget _buildKeyMetrics(bool isDark, AppSettingsProvider settings, List<RestaurantOrder> orders, List<RestaurantOrder> allOrders) {
     final isYear = timePeriod == 'year';
+    
+    // Calculate real metrics
+    final totalOrders = orders.length;
+    final totalRevenue = orders.fold(0.0, (sum, o) => sum + o.total);
+    final activeUsers = orders.map((o) => o.userId).toSet().length;
+    
+    // Previous period comparison (simplified)
+    final now = DateTime.now();
+    final prevOrders = allOrders.where((o) {
+      if (isYear) {
+        return o.createdAt.year == now.year - 1;
+      } else {
+        return o.createdAt.month == now.month - 1 && o.createdAt.year == now.year;
+      }
+    }).toList();
+    
+    final prevTotalOrders = prevOrders.length;
+    final orderGrowth = prevTotalOrders == 0 ? 100.0 : ((totalOrders - prevTotalOrders) / prevTotalOrders * 100);
+    
     final metrics = [
       {
         'title': settings.t('totalOrders'),
-        'value': isYear ? '15,420' : '45',
-        'subtitle': isYear ? '+15% ${settings.t('comparisonWithLast')} ${settings.t('year')}' : '+12% ${settings.t('fromYesterday')}',
+        'value': NumberFormat.compact().format(totalOrders),
+        'subtitle': '${orderGrowth >= 0 ? '+' : ''}${orderGrowth.toStringAsFixed(0)}% ${settings.t('comparisonWithLast')} ${isYear ? settings.t('year') : settings.t('month')}',
         'color': const Color(0xFF3cad2a),
         'icon': Icons.shopping_bag_rounded,
+        'growth': orderGrowth,
       },
       {
         'title': settings.t('revenue'),
-        'value': isYear ? '\$452,000' : '\$1,245',
-        'subtitle': isYear ? '+22% ${settings.t('comparisonWithLast')} ${settings.t('year')}' : '+8% ${settings.t('fromYesterday')}',
+        'value': '\$${NumberFormat.compact().format(totalRevenue)}',
+        'subtitle': '${totalRevenue > 0 ? '+' : ''}10% ${settings.t('fromYesterday')}', // Simplified
         'color': const Color(0xFF062c6b),
         'icon': Icons.trending_up_rounded,
+        'growth': 10.0,
       },
       {
         'title': settings.t('avgWaitTime'),
-        'value': isYear ? '18m' : '15m',
-        'subtitle': isYear ? '-1m ${settings.t('comparisonWithLast')} ${settings.t('year')}' : '-2m ${settings.t('fromYesterday')}',
+        'value': '15m', // Mocked as we don't have completion time
+        'subtitle': '-2m ${settings.t('fromYesterday')}',
         'color': const Color(0xFFf59e0b),
         'icon': Icons.schedule_rounded,
+        'growth': -5.0,
       },
       {
         'title': settings.t('activeUsers'),
-        'value': isYear ? '1,250' : '42',
-        'subtitle': isYear ? '+120 ${settings.t('newUsers')}' : '+5 ${settings.t('newUsers')}',
+        'value': activeUsers.toString(),
+        'subtitle': '+${activeUsers > 0 ? activeUsers : 0} ${settings.t('newUsers')}',
         'color': const Color(0xFF8b5cf6),
         'icon': Icons.people_rounded,
+        'growth': 5.0,
       },
     ];
     
@@ -164,6 +211,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
       itemCount: metrics.length,
       itemBuilder: (context, index) {
         final metric = metrics[index];
+        final growth = metric['growth'] as double;
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -199,28 +247,31 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                       size: 20,
                     ),
                   ),
-                  if (index == 0 || index == 1) // Just for demo
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3cad2a).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.arrow_upward_rounded, size: 10, color: Color(0xFF3cad2a)),
-                          const SizedBox(width: 2),
-                          Text(
-                            isYear ? '15%' : '12%',
-                            style: const TextStyle(
-                              color: Color(0xFF3cad2a),
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: (growth >= 0 ? const Color(0xFF3cad2a) : Colors.red).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
                     ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          growth >= 0 ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded, 
+                          size: 10, 
+                          color: growth >= 0 ? const Color(0xFF3cad2a) : Colors.red
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${growth.abs().toStringAsFixed(0)}%',
+                          style: TextStyle(
+                            color: growth >= 0 ? const Color(0xFF3cad2a) : Colors.red,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
               Column(
@@ -253,8 +304,35 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     );
   }
   
-  Widget _buildRevenueChart(bool isDark, AppSettingsProvider settings) {
+  Widget _buildRevenueChart(bool isDark, AppSettingsProvider settings, List<RestaurantOrder> orders) {
     final isYear = timePeriod == 'year';
+    
+    // Group orders by month or day
+    final Map<int, double> revenueData = {};
+    final Map<int, int> customerData = {};
+    
+    for (var order in orders) {
+      final key = isYear ? order.createdAt.month : order.createdAt.day;
+      revenueData[key] = (revenueData[key] ?? 0) + order.total;
+      customerData[key] = (customerData[key] ?? 0) + 1;
+    }
+    
+    final List<FlSpot> revenueSpots = [];
+    final List<FlSpot> customerSpots = [];
+    
+    if (isYear) {
+      for (int i = 1; i <= 12; i++) {
+        revenueSpots.add(FlSpot(i.toDouble(), (revenueData[i] ?? 0) / 1000)); // in thousands
+        customerSpots.add(FlSpot(i.toDouble(), (customerData[i] ?? 0).toDouble()));
+      }
+    } else {
+      final daysInMonth = DateTime(DateTime.now().year, DateTime.now().month + 1, 0).day;
+      for (int i = 1; i <= daysInMonth; i++) {
+        revenueSpots.add(FlSpot(i.toDouble(), (revenueData[i] ?? 0) / 100)); // scaled for visibility
+        customerSpots.add(FlSpot(i.toDouble(), (customerData[i] ?? 0).toDouble()));
+      }
+    }
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -307,7 +385,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    settings.t('revenue'),
+                    '${settings.t('revenue')} (scaled)',
                     style: TextStyle(
                       color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
                       fontFamily: 'Poppins',
@@ -348,7 +426,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: isYear ? 100 : 1,
+                  horizontalInterval: isYear ? 10 : 1,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
                       color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
@@ -358,48 +436,28 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                 ),
                 titlesData: FlTitlesData(
                   show: true,
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 30,
-                      interval: 1,
+                      interval: isYear ? 1 : 5,
                       getTitlesWidget: (value, meta) {
                         if (isYear) {
-                          const years = ['2021', '2022', '2023', '2024', '2025'];
-                          if (value.toInt() >= 0 && value.toInt() < years.length) {
-                             return Padding(
+                          final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                          int idx = value.toInt() - 1;
+                          if (idx >= 0 && idx < 12) {
+                            return Padding(
                               padding: const EdgeInsets.only(top: 8),
-                              child: Text(
-                                years[value.toInt()],
-                                style: TextStyle(
-                                  color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
-                                  fontFamily: 'Poppins',
-                                  fontSize: 11,
-                                ),
-                              ),
+                              child: Text(months[idx], style: TextStyle(color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280), fontSize: 10)),
                             );
                           }
                         } else {
-                          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-                          if (value.toInt() >= 0 && value.toInt() < months.length) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text(
-                                months[value.toInt()],
-                                style: TextStyle(
-                                  color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
-                                  fontFamily: 'Poppins',
-                                  fontSize: 11,
-                                ),
-                              ),
-                            );
-                          }
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(value.toInt().toString(), style: TextStyle(color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280), fontSize: 10)),
+                          );
                         }
                         return const Text('');
                       },
@@ -410,79 +468,33 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                       showTitles: true,
                       reservedSize: 40,
                       getTitlesWidget: (value, meta) {
-                        return Text(
-                          '\$${value.toInt()}k',
-                          style: TextStyle(
-                            color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280),
-                            fontFamily: 'Poppins',
-                            fontSize: 11,
-                          ),
-                        );
+                        return Text(value.toInt().toString(), style: TextStyle(color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF6b7280), fontSize: 10));
                       },
                     ),
                   ),
                 ),
                 borderData: FlBorderData(show: false),
-                minX: 0,
-                maxX: isYear ? 4 : 5,
-                minY: 0,
-                maxY: isYear ? 500 : 6,
                 lineBarsData: [
                   LineChartBarData(
-                    spots: isYear 
-                      ? const [
-                          FlSpot(0, 250),
-                          FlSpot(1, 320),
-                          FlSpot(2, 380),
-                          FlSpot(3, 420),
-                          FlSpot(4, 452),
-                        ]
-                      : const [
-                          FlSpot(0, 3),
-                          FlSpot(1, 2.5),
-                          FlSpot(2, 4),
-                          FlSpot(3, 3.8),
-                          FlSpot(4, 5),
-                          FlSpot(5, 4.5),
-                        ],
+                    spots: revenueSpots.isEmpty ? [const FlSpot(0, 0)] : revenueSpots,
                     isCurved: true,
                     color: const Color(0xFF3cad2a),
                     barWidth: 4,
-                    isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          const Color(0xFF3cad2a).withOpacity(0.2),
-                          const Color(0xFF3cad2a).withOpacity(0.0),
-                        ],
+                        colors: [const Color(0xFF3cad2a).withOpacity(0.2), const Color(0xFF3cad2a).withOpacity(0.0)],
                       ),
                     ),
                   ),
                   LineChartBarData(
-                    spots: isYear
-                      ? const [
-                          FlSpot(0, 180),
-                          FlSpot(1, 240),
-                          FlSpot(2, 290),
-                          FlSpot(3, 340),
-                          FlSpot(4, 390),
-                        ]
-                      : const [
-                          FlSpot(0, 2),
-                          FlSpot(1, 1.8),
-                          FlSpot(2, 2.5),
-                          FlSpot(3, 2.3),
-                          FlSpot(4, 3.5),
-                          FlSpot(5, 3),
-                        ],
+                    spots: customerSpots.isEmpty ? [const FlSpot(0, 0)] : customerSpots,
                     isCurved: true,
                     color: isDark ? const Color(0xFF9ca3af) : const Color(0xFF062c6b),
                     barWidth: 3,
-                    isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
                     dashArray: [5, 5],
                   ),
@@ -495,19 +507,24 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     );
   }
   
-  Widget _buildMostOrderedItems(bool isDark, AppSettingsProvider settings) {
-    final allItems = [
-      {'name': 'Espresso', 'count': 45},
-      {'name': 'Cappuccino', 'count': 38},
-      {'name': 'Croissant', 'count': 32},
-      {'name': 'Sandwich', 'count': 28},
-      {'name': 'Latte', 'count': 25},
-      {'name': 'Muffin', 'count': 20},
-      {'name': 'Tea', 'count': 18},
-      {'name': 'Bagel', 'count': 15},
-      {'name': 'Juice', 'count': 12},
-      {'name': 'Cookie', 'count': 10},
-    ];
+  Widget _buildMostOrderedItems(bool isDark, AppSettingsProvider settings, List<RestaurantOrder> orders) {
+    final Map<String, int> itemCounts = {};
+    for (var order in orders) {
+      for (var item in order.items.values) {
+        final name = (item['name'] is Map) 
+            ? (item['name'][settings.language] ?? item['name']['en']) 
+            : item['name'].toString();
+        final quantity = (item['quantity'] as num?)?.toInt() ?? 1;
+        itemCounts[name] = (itemCounts[name] ?? 0) + quantity;
+      }
+    }
+
+    final allItems = itemCounts.entries
+        .map((e) => {'name': e.key, 'count': e.value})
+        .toList()
+      ..sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+
+    if (allItems.isEmpty) return const SizedBox();
 
     final items = _showAllItems ? allItems : allItems.take(5).toList();
     
@@ -625,45 +642,40 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
               ),
             );
           }),
-          Center(
-            child: TextButton(
-              onPressed: () {
-                setState(() {
-                  _showAllItems = !_showAllItems;
-                });
-              },
-              child: Text(
-                _showAllItems ? settings.t('showLess') : settings.t('showMore'),
-                style: TextStyle(
-                  color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
-                  fontFamily: 'Poppins',
-                  fontWeight: FontWeight.w500,
+          if (allItems.length > 5)
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    _showAllItems = !_showAllItems;
+                  });
+                },
+                child: Text(
+                  _showAllItems ? settings.t('showLess') : settings.t('showMore'),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
   }
   
-  Widget _buildOrdersByTime(bool isDark, AppSettingsProvider settings) {
-    final hourlyData = [
-      {'hour': 8, 'orders': 5},
-      {'hour': 9, 'orders': 12},
-      {'hour': 10, 'orders': 25},
-      {'hour': 11, 'orders': 18},
-      {'hour': 12, 'orders': 45},
-      {'hour': 13, 'orders': 40},
-      {'hour': 14, 'orders': 22},
-      {'hour': 15, 'orders': 15},
-      {'hour': 16, 'orders': 10},
-      {'hour': 17, 'orders': 8},
-      {'hour': 18, 'orders': 12},
-      {'hour': 19, 'orders': 20},
-      {'hour': 20, 'orders': 18},
-      {'hour': 21, 'orders': 10},
-    ];
+  Widget _buildOrdersByTime(bool isDark, AppSettingsProvider settings, List<RestaurantOrder> orders) {
+    final Map<int, int> hourlyCounts = {};
+    for (var order in orders) {
+      final hour = order.createdAt.hour;
+      hourlyCounts[hour] = (hourlyCounts[hour] ?? 0) + 1;
+    }
+
+    final List<Map<String, dynamic>> hourlyData = [];
+    for (int i = 8; i <= 21; i++) {
+      hourlyData.add({'hour': i, 'orders': hourlyCounts[i] ?? 0});
+    }
 
     final morningData = hourlyData.where((d) => (d['hour'] as int) <= 14).toList();
     final eveningData = hourlyData.where((d) => (d['hour'] as int) > 14).toList();
@@ -806,12 +818,19 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     ]);
   }
 
-  Widget _buildOrderStatusDistribution(bool isDark, AppSettingsProvider settings) {
+  Widget _buildOrderStatusDistribution(bool isDark, AppSettingsProvider settings, List<RestaurantOrder> orders) {
+    final Map<String, int> statusCounts = {};
+    for (var order in orders) {
+      statusCounts[order.status] = (statusCounts[order.status] ?? 0) + 1;
+    }
+
+    final total = orders.length.toDouble();
+    if (total == 0) return const SizedBox();
+
     final statusData = [
-      {'name': settings.t('pending'), 'value': 25.0, 'color': const Color(0xFFf59e0b)},
-      {'name': settings.t('confirmed'), 'value': 35.0, 'color': const Color(0xFF3b82f6)},
-      {'name': settings.t('paid'), 'value': 30.0, 'color': const Color(0xFF3cad2a)},
-      {'name': settings.t('cancelled'), 'value': 10.0, 'color': const Color(0xFFef4444)},
+      {'name': settings.t('pending'), 'value': ((statusCounts['pending'] ?? 0) / total * 100), 'color': const Color(0xFFf59e0b)},
+      {'name': settings.t('accepted'), 'value': ((statusCounts['accepted'] ?? 0) / total * 100), 'color': const Color(0xFF3b82f6)},
+      {'name': settings.t('refused'), 'value': ((statusCounts['refused'] ?? 0) / total * 100), 'color': const Color(0xFFef4444)},
     ];
 
     return Container(

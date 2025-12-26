@@ -184,6 +184,34 @@ class DatabaseService {
     }
   }
 
+  Future<void> removeItemFromOrder(String orderId, String itemKey) async {
+    try {
+      final doc = await _ordersRef.doc(orderId).get();
+      if (!doc.exists) return;
+
+      final data = doc.data() as Map<String, dynamic>;
+      final items = Map<String, dynamic>.from(data['items'] ?? {});
+      
+      if (items.containsKey(itemKey)) {
+        final removedItem = items[itemKey] as Map<String, dynamic>;
+        final itemPrice = (removedItem['price'] as num?)?.toDouble() ?? 0.0;
+        final itemQuantity = (removedItem['quantity'] as num?)?.toInt() ?? 1;
+        
+        items.remove(itemKey);
+        
+        final double currentTotal = (data['total'] as num?)?.toDouble() ?? 0.0;
+        final double newTotal = currentTotal - (itemPrice * itemQuantity);
+
+        await _ordersRef.doc(orderId).update({
+          'items': items,
+          'total': newTotal,
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to remove item: $e');
+    }
+  }
+
   // ===== UPCOMING MENU MANAGEMENT =====
   
   Stream<List<UpcomingMeal>> getUpcomingMeals() {

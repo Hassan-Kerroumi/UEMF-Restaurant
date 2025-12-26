@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
-import '../services/database_service.dart';
 
 class MessageDialog extends StatefulWidget {
   final Map<String, dynamic> order;
@@ -210,40 +209,25 @@ class _MessageDialogState extends State<MessageDialog> {
           ),
         ),
         ElevatedButton.icon(
-          onPressed: _messageController.text.trim().isEmpty ? null : () async {
+          onPressed: _messageController.text.trim().isEmpty
+              ? null
+              : () {
                   final message = _messageController.text.trim();
                   final timeInfo = _selectedTime != null 
                       ? ' (${settings.t('suggestedTime')}: $_selectedTime)'
                       : '';
                   
-                  final fullFeedback = '$message$timeInfo';
+                  Navigator.pop(context);
                   
-                  try {
-                    await DatabaseService().updateOrderStatus(
-                      widget.order['id'], 
-                      widget.order['status'], 
-                      feedback: fullFeedback
-                    );
-                    
-                    if (mounted) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${settings.t('messageSent')} ${widget.order['studentName']}$timeInfo',
-                          ),
-                          backgroundColor: const Color(0xFF3cad2a),
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-                      );
-                    }
-                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${settings.t('messageSent')} ${widget.order['studentName']}$timeInfo',
+                      ),
+                      backgroundColor: const Color(0xFF3cad2a),
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
                 },
           icon: const Icon(Icons.send_rounded, size: 18),
           label: Text(settings.t('sendMessage')),
