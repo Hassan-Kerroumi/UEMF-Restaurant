@@ -8,7 +8,14 @@ import 'product_details_sheet.dart';
 import '../../login/login_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
-  const UserHomeScreen({super.key});
+  final String userId;
+  final Map<String, dynamic> initialData;
+
+  const UserHomeScreen({
+    super.key,
+    required this.userId,
+    required this.initialData,
+  });
 
   @override
   State<UserHomeScreen> createState() => _UserHomeScreenState();
@@ -93,144 +100,199 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                settings.t('welcome'),
-                                style: TextStyle(
-                                  color: isDark
-                                      ? const Color(0xFF9ca3af)
-                                      : const Color(0xFF64748b),
-                                  fontSize: 14,
-                                  fontFamily: 'Poppins',
-                                ),
+                    // User Header Section (Blue Card)
+                    StreamBuilder<Map<String, dynamic>>(
+                      stream: DatabaseService().getUserStream(widget.userId),
+                      initialData: widget.initialData,
+                      builder: (context, userSnapshot) {
+                        final userData = userSnapshot.data ?? {};
+                        final name =
+                            userData['name'] ??
+                            userData['username'] ??
+                            'Student';
+                        final balance =
+                            (userData['balance'] as num?)?.toDouble() ?? 0.0;
+
+                        return Stack(
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.fromLTRB(
+                                24,
+                                70,
+                                24,
+                                30,
                               ),
-                              Text(
-                                'Hungry?',
-                                style: TextStyle(
-                                  color: isDark
-                                      ? const Color(0xFFf9fafb)
-                                      : const Color(0xFF1a1a1a),
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Poppins',
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF062c6b),
+                                borderRadius: const BorderRadius.only(
+                                  bottomLeft: Radius.circular(32),
+                                  bottomRight: Radius.circular(32),
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF062c6b,
+                                    ).withOpacity(0.3),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              PopupMenuButton<String>(
-                                icon: Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? const Color(0xFF1a1f2e)
-                                        : Colors.white,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: isDark
-                                          ? Colors.white.withOpacity(0.1)
-                                          : Colors.grey.withOpacity(0.1),
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    Icons.language_rounded,
-                                    color: isDark
-                                        ? const Color(0xFFf9fafb)
-                                        : const Color(0xFF1a1a1a),
-                                    size: 20,
-                                  ),
-                                ),
-                                onSelected: (String value) {
-                                  settings.setLanguage(value);
-                                },
-                                itemBuilder: (BuildContext context) =>
-                                    <PopupMenuEntry<String>>[
-                                      PopupMenuItem<String>(
-                                        value: 'en',
-                                        child: Row(
-                                          children: [
-                                            const Text('🇬🇧  English'),
-                                            if (settings.language == 'en') ...[
-                                              const SizedBox(width: 8),
-                                              const Icon(
-                                                Icons.check,
-                                                color: Color(0xFF3cad2a),
-                                                size: 16,
-                                              ),
-                                            ],
-                                          ],
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Welcome back,',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.8),
+                                          fontSize: 14,
+                                          fontFamily: 'Poppins',
                                         ),
                                       ),
-                                      PopupMenuItem<String>(
-                                        value: 'fr',
-                                        child: Row(
-                                          children: [
-                                            const Text('🇫🇷  Français'),
-                                            if (settings.language == 'fr') ...[
-                                              const SizedBox(width: 8),
-                                              const Icon(
-                                                Icons.check,
-                                                color: Color(0xFF3cad2a),
-                                                size: 16,
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                      PopupMenuItem<String>(
-                                        value: 'ar',
-                                        child: Row(
-                                          children: [
-                                            const Text('🇲🇦  العربية'),
-                                            if (settings.language == 'ar') ...[
-                                              const SizedBox(width: 8),
-                                              const Icon(
-                                                Icons.check,
-                                                color: Color(0xFF3cad2a),
-                                                size: 16,
-                                              ),
-                                            ],
-                                          ],
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        name,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Poppins',
                                         ),
                                       ),
                                     ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        'Credit Balance',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.8),
+                                          fontSize: 14,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '\$${balance.toStringAsFixed(1)}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 12),
-                              GestureDetector(
-                                onTap: () => _handleLogout(context),
-                                child: Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? const Color(0xFF1a1f2e)
-                                        : Colors.white,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: isDark
-                                          ? Colors.white.withOpacity(0.1)
-                                          : Colors.grey.withOpacity(0.1),
+                            ),
+                            // Top Buttons (Standard)
+                            Positioned(
+                              top: 16,
+                              right: 16,
+                              child: Row(
+                                children: [
+                                  PopupMenuButton<String>(
+                                    icon: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.language_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    onSelected: (String value) {
+                                      settings.setLanguage(value);
+                                    },
+                                    itemBuilder: (BuildContext context) =>
+                                        <PopupMenuEntry<String>>[
+                                          PopupMenuItem<String>(
+                                            value: 'en',
+                                            child: Row(
+                                              children: [
+                                                const Text('🇬🇧  English'),
+                                                if (settings.language ==
+                                                    'en') ...[
+                                                  const SizedBox(width: 8),
+                                                  const Icon(
+                                                    Icons.check,
+                                                    color: Color(0xFF3cad2a),
+                                                    size: 16,
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                          PopupMenuItem<String>(
+                                            value: 'fr',
+                                            child: Row(
+                                              children: [
+                                                const Text('🇫🇷  Français'),
+                                                if (settings.language ==
+                                                    'fr') ...[
+                                                  const SizedBox(width: 8),
+                                                  const Icon(
+                                                    Icons.check,
+                                                    color: Color(0xFF3cad2a),
+                                                    size: 16,
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                          PopupMenuItem<String>(
+                                            value: 'ar',
+                                            child: Row(
+                                              children: [
+                                                const Text('🇲🇦  العربية'),
+                                                if (settings.language ==
+                                                    'ar') ...[
+                                                  const SizedBox(width: 8),
+                                                  const Icon(
+                                                    Icons.check,
+                                                    color: Color(0xFF3cad2a),
+                                                    size: 16,
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                  ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () => _handleLogout(context),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.logout_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                     ),
                                   ),
-                                  child: const Icon(
-                                    Icons.logout_rounded,
-                                    color: Color(0xFFef4444),
-                                    size: 20,
-                                  ),
-                                ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
 
                     // Search Bar

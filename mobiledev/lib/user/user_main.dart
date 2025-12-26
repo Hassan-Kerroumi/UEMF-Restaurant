@@ -39,7 +39,10 @@ class _UserMainState extends State<UserMain> {
   Widget build(BuildContext context) {
     // Pass user ID to History Screen
     final List<Widget> screens = [
-      const UserHomeScreen(),
+      UserHomeScreen(
+        userId: widget.userData['id'] ?? '',
+        initialData: widget.userData,
+      ),
       UserHistoryScreen(userId: widget.userData['id'] ?? ''), // Pass param here
       const UserUpcomingScreen(),
     ];

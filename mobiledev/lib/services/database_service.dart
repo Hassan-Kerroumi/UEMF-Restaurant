@@ -12,30 +12,40 @@ class DatabaseService {
   factory DatabaseService() => _instance;
 
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  
+
   // Use getter to ensure we get the instance after settings are configured in main.dart
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
-  
+
   DatabaseService._internal();
 
   // Collections
   // UPDATED: Changed from 'products' to 'meals' as requested
   CollectionReference get _mealsRef => _firestore.collection('meals');
   CollectionReference get _ordersRef => _firestore.collection('orders');
-  CollectionReference get _upcomingRef => _firestore.collection('upcoming_menu');
+  CollectionReference get _upcomingRef =>
+      _firestore.collection('upcoming_menu');
   CollectionReference get _usersRef => _firestore.collection('users');
 
   // ===== USER MANAGEMENT =====
 
   /// Verify user credentials
-  Future<Map<String, dynamic>?> verifyUser(String username, String password) async {
+  Future<Map<String, dynamic>?> verifyUser(
+    String username,
+    String password,
+  ) async {
     try {
       // 1. Try finding by 'username'
-      var querySnapshot = await _usersRef.where('username', isEqualTo: username).limit(1).get();
+      var querySnapshot = await _usersRef
+          .where('username', isEqualTo: username)
+          .limit(1)
+          .get();
 
       // 2. Try finding by 'email'
       if (querySnapshot.docs.isEmpty) {
-        querySnapshot = await _usersRef.where('email', isEqualTo: username).limit(1).get();
+        querySnapshot = await _usersRef
+            .where('email', isEqualTo: username)
+            .limit(1)
+            .get();
       }
 
       // 3. Manual ID check
@@ -64,8 +74,19 @@ class DatabaseService {
       throw Exception('Login failed: $e');
     }
   }
+
+  /// Stream user data (balance, etc)
+  Stream<Map<String, dynamic>> getUserStream(String userId) {
+    return _usersRef.doc(userId).snapshots().map((doc) {
+      if (doc.exists && doc.data() != null) {
+        return doc.data() as Map<String, dynamic>;
+      } else {
+        return {};
+      }
+    });
+  }
   // ===== MEAL (PRODUCT) MANAGEMENT =====
-  
+
   /// Get all meals as a stream
   Stream<List<Meal>> getMeals() {
     return _mealsRef.snapshots().map((snapshot) {
@@ -78,23 +99,27 @@ class DatabaseService {
   /// Add a new meal to the 'meals' collection
   // In lib/services/database_service.dart
 
-  Future<String> addMeal(Meal meal, {Uint8List? imageBytes, String? imageName}) async {
+  Future<String> addMeal(
+    Meal meal, {
+    Uint8List? imageBytes,
+    String? imageName,
+  }) async {
     try {
       String? imageUrl;
-      
+
       // 1. Upload the image if bytes are provided
       if (imageBytes != null && imageName != null) {
         imageUrl = await _uploadImage(imageBytes, imageName, 'meals');
       }
-      
+
       // 2. Convert meal to map
       final mealData = meal.toJson();
-      
+
       // 3. IMPORTANT: Attach the URL to the data before saving
       if (imageUrl != null) {
         mealData['imageUrl'] = imageUrl;
       }
-      
+
       // 4. Save to Firestore
       final docRef = await _mealsRef.add(mealData);
       return docRef.id;
@@ -104,18 +129,23 @@ class DatabaseService {
   }
 
   /// Update an existing meal
-  Future<void> updateMeal(String mealId, Meal meal, {Uint8List? newImageBytes, String? newImageName}) async {
+  Future<void> updateMeal(
+    String mealId,
+    Meal meal, {
+    Uint8List? newImageBytes,
+    String? newImageName,
+  }) async {
     try {
       String? imageUrl;
       if (newImageBytes != null && newImageName != null) {
         imageUrl = await _uploadImage(newImageBytes, newImageName, 'meals');
       }
-      
+
       final mealData = meal.toJson();
       if (imageUrl != null) {
         mealData['imageUrl'] = imageUrl;
       }
-      
+
       await _mealsRef.doc(mealId).update(mealData);
     } catch (e) {
       throw Exception('Failed to update meal: $e');
@@ -143,10 +173,14 @@ class DatabaseService {
 
     return query.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
-        return RestaurantOrder.fromJson(doc.data() as Map<String, dynamic>, doc.id);
+        return RestaurantOrder.fromJson(
+          doc.data() as Map<String, dynamic>,
+          doc.id,
+        );
       }).toList();
     });
   }
+
   Future<String> createOrder(RestaurantOrder order) async {
     try {
       final docRef = await _ordersRef.add(order.toJson());
@@ -172,7 +206,11 @@ class DatabaseService {
     }
   }
 
-  Future<void> updateOrderStatus(String orderId, String status, {String feedback = ''}) async {
+  Future<void> updateOrderStatus(
+    String orderId,
+    String status, {
+    String feedback = '',
+  }) async {
     try {
       final updates = {'status': status};
       if (feedback.isNotEmpty) {
@@ -191,14 +229,14 @@ class DatabaseService {
 
       final data = doc.data() as Map<String, dynamic>;
       final items = Map<String, dynamic>.from(data['items'] ?? {});
-      
+
       if (items.containsKey(itemKey)) {
         final removedItem = items[itemKey] as Map<String, dynamic>;
         final itemPrice = (removedItem['price'] as num?)?.toDouble() ?? 0.0;
         final itemQuantity = (removedItem['quantity'] as num?)?.toInt() ?? 1;
-        
+
         items.remove(itemKey);
-        
+
         final double currentTotal = (data['total'] as num?)?.toDouble() ?? 0.0;
         final double newTotal = currentTotal - (itemPrice * itemQuantity);
 
@@ -213,30 +251,36 @@ class DatabaseService {
   }
 
   // ===== UPCOMING MENU MANAGEMENT =====
-  
+
   Stream<List<UpcomingMeal>> getUpcomingMeals() {
-    return _upcomingRef
-        .orderBy('date', descending: false)
-        .snapshots()
-        .map((snapshot) {
+    return _upcomingRef.orderBy('date', descending: false).snapshots().map((
+      snapshot,
+    ) {
       return snapshot.docs.map((doc) {
-        return UpcomingMeal.fromJson(doc.data() as Map<String, dynamic>, doc.id);
+        return UpcomingMeal.fromJson(
+          doc.data() as Map<String, dynamic>,
+          doc.id,
+        );
       }).toList();
     });
   }
 
-  Future<String> addUpcomingMeal(UpcomingMeal meal, {Uint8List? imageBytes, String? imageName}) async {
+  Future<String> addUpcomingMeal(
+    UpcomingMeal meal, {
+    Uint8List? imageBytes,
+    String? imageName,
+  }) async {
     try {
       String? imageUrl;
       if (imageBytes != null && imageName != null) {
         imageUrl = await _uploadImage(imageBytes, imageName, 'upcoming');
       }
-      
+
       final mealData = meal.toJson();
       if (imageUrl != null) {
         mealData['imageUrl'] = imageUrl;
       }
-      
+
       final docRef = await _upcomingRef.add(mealData);
       return docRef.id;
     } catch (e) {
@@ -244,18 +288,23 @@ class DatabaseService {
     }
   }
 
-  Future<void> updateUpcomingMeal(String mealId, UpcomingMeal meal, {Uint8List? newImageBytes, String? newImageName}) async {
+  Future<void> updateUpcomingMeal(
+    String mealId,
+    UpcomingMeal meal, {
+    Uint8List? newImageBytes,
+    String? newImageName,
+  }) async {
     try {
       String? imageUrl;
       if (newImageBytes != null && newImageName != null) {
         imageUrl = await _uploadImage(newImageBytes, newImageName, 'upcoming');
       }
-      
+
       final mealData = meal.toJson();
       if (imageUrl != null) {
         mealData['imageUrl'] = imageUrl;
       }
-      
+
       await _upcomingRef.doc(mealId).update(mealData);
     } catch (e) {
       throw Exception('Failed to update upcoming meal: $e');
@@ -281,20 +330,26 @@ class DatabaseService {
   }
 
   // ===== HELPER METHODS =====
-  
-  Future<String> _uploadImage(Uint8List imageBytes, String imageName, String folder) async {
+
+  Future<String> _uploadImage(
+    Uint8List imageBytes,
+    String imageName,
+    String folder,
+  ) async {
     try {
-      final String fileName = '${DateTime.now().millisecondsSinceEpoch}_$imageName';
+      final String fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_$imageName';
       final Reference storageRef = _storage.ref().child('$folder/$fileName');
-      
+
       final metadata = SettableMetadata(contentType: 'image/jpeg');
-      
+
       final UploadTask uploadTask = storageRef.putData(imageBytes, metadata);
       final TaskSnapshot snapshot = await uploadTask;
-      
+
       final String downloadUrl = await snapshot.ref.getDownloadURL().timeout(
         const Duration(seconds: 20),
-        onTimeout: () => throw Exception('Upload timed out. Please check your connection.'),
+        onTimeout: () =>
+            throw Exception('Upload timed out. Please check your connection.'),
       );
       return downloadUrl;
     } catch (e) {
