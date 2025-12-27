@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../providers/app_settings_provider.dart';
 import 'package:provider/provider.dart';
 import '../../services/database_service.dart';
@@ -404,13 +405,14 @@ class UserHistoryScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Order #${order.id.length > 4 ? order.id.substring(order.id.length - 4) : order.id}',
+                            DateFormat('dd MMM yyyy, HH:mm').format(date),
                             style: TextStyle(
                               color: isDark
                                   ? const Color(0xFFf9fafb)
                                   : const Color(0xFF1a1a1a),
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Poppins',
+                              fontSize: 16,
                             ),
                           ),
                           Container(
@@ -443,8 +445,14 @@ class UserHistoryScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${date.day}/${date.month} ${date.hour}:${date.minute}',
-                            style: TextStyle(color: Colors.grey[600]),
+                            order.id.length > 4
+                                ? '#${order.id.substring(order.id.length - 4)}'
+                                : '#${order.id}',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                              fontFamily: 'Poppins',
+                            ),
                           ),
                           Text(
                             '${total.toStringAsFixed(2)} MAD',
