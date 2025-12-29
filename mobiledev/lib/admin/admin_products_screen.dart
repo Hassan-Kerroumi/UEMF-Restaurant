@@ -262,7 +262,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             crossAxisCount: 2,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: 0.75,
+            childAspectRatio: 0.68, // Increased height to prevent overflow
           ),
           itemCount: filteredProducts.length,
           itemBuilder: (context, index) {
@@ -354,15 +354,14 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image Area (Top 60%)
                 Expanded(
-                  flex: 3,
+                  flex: 5,
                   child: _buildProductImage(product.imageUrl),
                 ),
                 
                 // Info Area (Bottom 40%)
                 Expanded(
-                  flex: 2,
+                  flex: 4,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                     child: Column(
@@ -395,7 +394,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                               product.name[settings.language] ?? product.name['en'] ?? '',
                               style: TextStyle(
                                 color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
-                                fontSize: 14,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 fontFamily: 'Poppins',
                                 height: 1.1,
