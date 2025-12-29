@@ -509,8 +509,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              childAspectRatio:
-                                  0.70, // Optimized for new card design
+                              childAspectRatio: 0.64,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
                             ),
@@ -588,7 +587,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               Expanded(
                 flex: 3,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -604,22 +603,22 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               color: isDark
                                   ? const Color(0xFFf9fafb)
                                   : const Color(0xFF1a1a1a),
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                               fontFamily: 'Poppins',
-                              height: 1.2,
+                              height: 1.15,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
                           Text(
                             settings.t(product.category),
                             style: TextStyle(
                               color: isDark
                                   ? Colors.grey[400]
                                   : Colors.grey[600],
-                              fontSize: 11,
+                              fontSize: 10,
                               fontFamily: 'Poppins',
                             ),
                             maxLines: 1,
@@ -637,24 +636,24 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               color: isDark
                                   ? const Color(0xFF3cad2a)
                                   : const Color(0xFF062c6b),
-                              fontSize: 16,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Poppins',
                             ),
                           ),
                           // "Add" Mini Button
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
                               color: isDark
                                   ? const Color(0xFF3cad2a)
                                   : const Color(0xFF062c6b),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(
                               Icons.add_rounded,
                               color: Colors.white,
-                              size: 18,
+                              size: 16,
                             ),
                           ),
                         ],

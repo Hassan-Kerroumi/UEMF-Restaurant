@@ -400,7 +400,7 @@ class _AdminUpcomingScreenState extends State<AdminUpcomingScreen> {
             crossAxisCount: 2,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: 0.70,
+            childAspectRatio: 0.66,
           ),
           itemCount: meals.length,
           itemBuilder: (context, index) {

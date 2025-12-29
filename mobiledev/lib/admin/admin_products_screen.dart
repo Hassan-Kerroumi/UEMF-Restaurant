@@ -262,7 +262,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             crossAxisCount: 2,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: 0.68, // Increased height to prevent overflow
+            childAspectRatio: 0.64, // Increased height to prevent overflow
           ),
           itemCount: filteredProducts.length,
           itemBuilder: (context, index) {
@@ -373,10 +373,10 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                           children: [
                             // Category Badge
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: (isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b)).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
                                 product.category.toUpperCase(),
@@ -388,7 +388,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 4),
                             // Product Name
                             Text(
                               product.name[settings.language] ?? product.name['en'] ?? '',
