@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'upcoming_meal_card.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_settings_provider.dart';
 import '../../services/database_service.dart';
@@ -38,7 +38,7 @@ class _UserUpcomingScreenState extends State<UserUpcomingScreen> {
                     ? const Color(0xFF3cad2a)
                     : const Color(0xFF062c6b),
                 fontSize: 24,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 fontFamily: 'Poppins',
               ),
             ),
@@ -86,20 +86,42 @@ class _UserUpcomingScreenState extends State<UserUpcomingScreen> {
                 );
               }
 
+              final breakfastMeals = meals
+                  .where((m) => m.category == 'breakfast')
+                  .toList();
+              final lunchMeals = meals
+                  .where((m) => m.category == 'lunch')
+                  .toList();
+              final dinnerMeals = meals
+                  .where((m) => m.category == 'dinner')
+                  .toList();
+
               return SliverPadding(
                 padding: const EdgeInsets.all(16),
-                sliver: SliverGrid(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) =>
-                        _buildMealCard(meals[index], isDark, settings),
-                    childCount: meals.length,
-                  ),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.75,
-                  ),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    if (breakfastMeals.isNotEmpty)
+                      _buildCategorySection(
+                        settings.t('breakfast'),
+                        breakfastMeals,
+                        isDark,
+                        settings,
+                      ),
+                    if (lunchMeals.isNotEmpty)
+                      _buildCategorySection(
+                        settings.t('lunch'),
+                        lunchMeals,
+                        isDark,
+                        settings,
+                      ),
+                    if (dinnerMeals.isNotEmpty)
+                      _buildCategorySection(
+                        settings.t('dinner'),
+                        dinnerMeals,
+                        isDark,
+                        settings,
+                      ),
+                  ]),
                 ),
               );
             },
@@ -109,172 +131,68 @@ class _UserUpcomingScreenState extends State<UserUpcomingScreen> {
     );
   }
 
-  Widget _buildMealCard(
-    UpcomingMeal meal,
+  Widget _buildCategorySection(
+    String title,
+    List<UpcomingMeal> meals,
     bool isDark,
     AppSettingsProvider settings,
   ) {
-    final hasVoted = _votedMeals.contains(meal.id);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image
-          Expanded(
-            flex: 3,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF3cad2a)
+                      : const Color(0xFF062c6b),
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                image: meal.imageUrl != null
-                    ? (meal.imageUrl!.startsWith('data:image')
-                          ? DecorationImage(
-                              image: MemoryImage(
-                                base64Decode(meal.imageUrl!.split(',')[1]),
-                              ),
-                              fit: BoxFit.cover,
-                            )
-                          : DecorationImage(
-                              image: NetworkImage(meal.imageUrl!),
-                              fit: BoxFit.cover,
-                            ))
-                    : null,
-                color: isDark ? const Color(0xFF2d3748) : Colors.grey[200],
               ),
-              child: meal.imageUrl == null
-                  ? Center(
-                      child: Icon(
-                        Icons.restaurant,
-                        color: Colors.grey[400],
-                        size: 40,
-                      ),
-                    )
-                  : null,
-            ),
-          ),
-
-          // Content
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        meal.name[settings.language] ?? meal.name['en'] ?? '',
-                        style: TextStyle(
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF1a1a1a),
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Poppins',
-                          fontSize: 14,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        settings.t(meal.category),
-                        style: TextStyle(
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                          fontSize: 12,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${meal.price} MAD',
-                        style: TextStyle(
-                          color: isDark
-                              ? const Color(0xFF3cad2a)
-                              : const Color(0xFF062c6b),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                      InkWell(
-                        onTap: hasVoted
-                            ? null
-                            : () async {
-                                setState(() => _votedMeals.add(meal.id));
-                                await _db.voteForMeal(meal.id);
-                              },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: hasVoted
-                                ? (isDark ? Colors.white10 : Colors.grey[200])
-                                : (isDark
-                                      ? const Color(0xFF3cad2a).withOpacity(0.2)
-                                      : const Color(
-                                          0xFF062c6b,
-                                        ).withOpacity(0.1)),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                hasVoted ? Icons.check_circle : Icons.thumb_up,
-                                size: 14,
-                                color: hasVoted
-                                    ? Colors.grey
-                                    : (isDark
-                                          ? const Color(0xFF3cad2a)
-                                          : const Color(0xFF062c6b)),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${meal.voteCount}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: hasVoted
-                                      ? Colors.grey
-                                      : (isDark
-                                            ? const Color(0xFF3cad2a)
-                                            : const Color(0xFF062c6b)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              const SizedBox(width: 8),
+              Text(
+                title.toUpperCase(),
+                style: TextStyle(
+                  color: isDark
+                      ? const Color(0xFFf9fafb)
+                      : const Color(0xFF1a1a1a),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Poppins',
+                  letterSpacing: 1.2,
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+        SizedBox(
+          height: 280, // Fixed height for the horizontal list
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: meals.length,
+            itemBuilder: (context, index) {
+              final meal = meals[index];
+              final hasVoted = _votedMeals.contains(meal.id);
+              return Container(
+                width: 200, // Fixed width for each card
+                margin: const EdgeInsets.only(right: 16, bottom: 16),
+                child: UpcomingMealCard(
+                  meal: meal,
+                  isDark: isDark,
+                  initialHasVoted: hasVoted,
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
     );
   }
 }

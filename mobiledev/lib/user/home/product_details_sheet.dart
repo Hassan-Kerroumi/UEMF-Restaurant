@@ -57,9 +57,14 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : const Color(0xFF062c6b).withOpacity(0.15),
             blurRadius: 20,
-            spreadRadius: 5,
+            offset: const Offset(
+              0,
+              -5,
+            ), // Negative offset for bottom sheet popping up? Top shadow? Actually bottom sheet usually has shadow around.
           ),
         ],
       ),
@@ -90,12 +95,17 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Poppins',
-                    color: isDark ? const Color(0xFFf9fafb) : const Color(0xFF1a1a1a),
+                    color: isDark
+                        ? const Color(0xFFf9fafb)
+                        : const Color(0xFF1a1a1a),
                   ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF3cad2a).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -123,14 +133,16 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
               borderRadius: BorderRadius.circular(16),
               image: product.imageUrl != null
                   ? (product.imageUrl!.startsWith('data:image')
-                      ? DecorationImage(
-                          image: MemoryImage(base64Decode(product.imageUrl!.split(',')[1])),
-                          fit: BoxFit.cover,
-                        )
-                      : DecorationImage(
-                          image: NetworkImage(product.imageUrl!),
-                          fit: BoxFit.cover,
-                        ))
+                        ? DecorationImage(
+                            image: MemoryImage(
+                              base64Decode(product.imageUrl!.split(',')[1]),
+                            ),
+                            fit: BoxFit.cover,
+                          )
+                        : DecorationImage(
+                            image: NetworkImage(product.imageUrl!),
+                            fit: BoxFit.cover,
+                          ))
                   : null,
             ),
             child: product.imageUrl == null
@@ -247,7 +259,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
 
           // Order Type
           Text(
-            'Type',
+            settings.t('mealType'),
             style: TextStyle(
               color: isDark ? const Color(0xFF9ca3af) : Colors.grey[600],
               fontSize: 14,
@@ -339,7 +351,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Total:',
+                    '${settings.t('total')}:',
                     style: TextStyle(
                       fontSize: 12,
                       color: isDark ? const Color(0xFF9ca3af) : Colors.grey,
@@ -361,7 +373,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                 onPressed: () {
                   final productMap = product.toJson();
                   productMap['id'] = product.id;
-                  
+
                   Provider.of<CartProvider>(context, listen: false).addToCart(
                     productMap,
                     quantity: _quantity,
@@ -371,7 +383,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Order added to cart'),
+                      content: Text(settings.t('orderAddedToCart')),
                       backgroundColor: const Color(0xFF3cad2a),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(

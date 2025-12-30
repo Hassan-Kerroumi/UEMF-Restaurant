@@ -27,8 +27,8 @@ class UserHistoryScreen extends StatelessWidget {
           settings.t('orders'),
           style: TextStyle(
             color: isDark ? const Color(0xFF3cad2a) : const Color(0xFF062c6b),
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
             fontFamily: 'Poppins',
           ),
         ),
@@ -62,7 +62,7 @@ class UserHistoryScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No orders yet',
+                    settings.t('noOrdersYet'),
                     style: TextStyle(
                       color: isDark
                           ? const Color(0xFF9ca3af)
@@ -124,7 +124,7 @@ class UserHistoryScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Order Details',
+                                settings.t('orderDetails'),
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -141,15 +141,27 @@ class UserHistoryScreen extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: status == 'pending'
-                                      ? const Color(0xFF3cad2a).withOpacity(0.1)
+                                      ? Colors.orange.withOpacity(0.1)
+                                      : status == 'accepted' ||
+                                            status == 'confirmed'
+                                      ? Colors.grey.withOpacity(0.1)
+                                      : status == 'refused' ||
+                                            status == 'cancelled'
+                                      ? Colors.red.withOpacity(0.1)
                                       : Colors.grey.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  status.toUpperCase(),
+                                  settings.t(status),
                                   style: TextStyle(
                                     color: status == 'pending'
-                                        ? const Color(0xFF3cad2a)
+                                        ? Colors.orange
+                                        : status == 'accepted' ||
+                                              status == 'confirmed'
+                                        ? Colors.grey
+                                        : status == 'refused' ||
+                                              status == 'cancelled'
+                                        ? Colors.red
                                         : Colors.grey,
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -202,7 +214,7 @@ class UserHistoryScreen extends StatelessWidget {
                                               ),
                                             ),
                                             Text(
-                                              'Quantity: $quantity',
+                                              '${settings.t('quantity')}: $quantity',
                                               style: TextStyle(
                                                 color: isDark
                                                     ? const Color(0xFF9ca3af)
@@ -235,7 +247,7 @@ class UserHistoryScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Total',
+                                settings.t('total'),
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -270,7 +282,7 @@ class UserHistoryScreen extends StatelessWidget {
                                           ? const Color(0xFF1a1f2e)
                                           : Colors.white,
                                       title: Text(
-                                        'Cancel Order?',
+                                        settings.t('cancelOrderQ'),
                                         style: TextStyle(
                                           color: isDark
                                               ? Colors.white
@@ -278,7 +290,7 @@ class UserHistoryScreen extends StatelessWidget {
                                         ),
                                       ),
                                       content: Text(
-                                        'Are you sure you want to cancel this order?',
+                                        settings.t('cancelOrderConfirmation'),
                                         style: TextStyle(
                                           color: isDark
                                               ? Colors.white70
@@ -289,7 +301,7 @@ class UserHistoryScreen extends StatelessWidget {
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.pop(context),
-                                          child: const Text('No'),
+                                          child: Text(settings.t('no')),
                                         ),
                                         TextButton(
                                           onPressed: () async {
@@ -309,17 +321,19 @@ class UserHistoryScreen extends StatelessWidget {
                                               ScaffoldMessenger.of(
                                                 context,
                                               ).showSnackBar(
-                                                const SnackBar(
+                                                SnackBar(
                                                   content: Text(
-                                                    'Order cancelled successfully',
+                                                    settings.t(
+                                                      'orderCancelledSuccess',
+                                                    ),
                                                   ),
                                                   backgroundColor: Colors.red,
                                                 ),
                                               );
                                             }
                                           },
-                                          child: const Text(
-                                            'Yes, Cancel',
+                                          child: Text(
+                                            settings.t('yesCancel'),
                                             style: TextStyle(color: Colors.red),
                                           ),
                                         ),
@@ -337,8 +351,8 @@ class UserHistoryScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
-                                child: const Text(
-                                  'Cancel Order',
+                                child: Text(
+                                  settings.t('cancel'),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -390,12 +404,14 @@ class UserHistoryScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        color: isDark
+                            ? Colors.black.withOpacity(0.2)
+                            : const Color(0xFF062c6b).withOpacity(0.08),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
@@ -405,7 +421,12 @@ class UserHistoryScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            DateFormat('dd MMM yyyy, HH:mm').format(date),
+                            DateFormat(
+                              'dd MMM yyyy, HH:mm',
+                              settings.language == 'ar'
+                                  ? 'en'
+                                  : settings.language,
+                            ).format(date),
                             style: TextStyle(
                               color: isDark
                                   ? const Color(0xFFf9fafb)
@@ -422,15 +443,26 @@ class UserHistoryScreen extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: status == 'pending'
-                                  ? const Color(0xFF3cad2a).withOpacity(0.1)
+                                  ? Colors.orange.withOpacity(0.1)
+                                  : status == 'accepted' ||
+                                        status == 'confirmed'
+                                  ? Colors.grey.withOpacity(0.1)
+                                  : status == 'refused' || status == 'cancelled'
+                                  ? Colors.red.withOpacity(0.1)
                                   : Colors.grey.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              status.toUpperCase(),
+                              settings.t(status),
                               style: TextStyle(
                                 color: status == 'pending'
-                                    ? const Color(0xFF3cad2a)
+                                    ? Colors.orange
+                                    : status == 'accepted' ||
+                                          status == 'confirmed'
+                                    ? Colors.grey
+                                    : status == 'refused' ||
+                                          status == 'cancelled'
+                                    ? Colors.red
                                     : Colors.grey,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -444,19 +476,10 @@ class UserHistoryScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            order.id.length > 4
-                                ? '#${order.id.substring(order.id.length - 4)}'
-                                : '#${order.id}',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
+                          const SizedBox.shrink(), // Order ID hidden
                           Text(
                             '${total.toStringAsFixed(2)} MAD',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF3cad2a),
                             ),

@@ -110,11 +110,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Restaurant App',
+                            settings.t('appName'),
                             style: TextStyle(
                               color: const Color(0xFF3cad2a),
                               fontSize: 24,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                               fontFamily: 'Poppins',
                             ),
                           ),
@@ -294,7 +294,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Welcome back,',
+                                    settings.t('welcomeBack'),
                                     style: TextStyle(
                                       color: Colors.white.withOpacity(0.8),
                                       fontSize: 14,
@@ -317,7 +317,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    'Credit Balance',
+                                    settings.t('creditBalance'),
                                     style: TextStyle(
                                       color: Colors.white.withOpacity(0.8),
                                       fontSize: 14,
@@ -326,7 +326,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '\$${balance.toStringAsFixed(1)}',
+                                    '${balance.toStringAsFixed(1)} MAD',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 20,
@@ -388,7 +388,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             hintText:
                                 settings.t('searchPlaceholder') ==
                                     'searchPlaceholder'
-                                ? 'Search for food...'
+                                ? settings.t('searchPlaceholder')
                                 : settings.t('searchPlaceholder'),
                             hintStyle: TextStyle(
                               color: isDark
@@ -489,7 +489,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'No items found',
+                                settings.t('noItemsFound'),
                                 style: TextStyle(
                                   color: isDark
                                       ? Colors.white54
@@ -501,6 +501,85 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           ),
                         ),
                       )
+                    else if (_selectedCategory == 'all' && _searchQuery.isEmpty)
+                      ...settings.categories
+                          .where((cat) => cat['id'] != 'all')
+                          .map((cat) {
+                            final catId = cat['id'] as String;
+                            final catProducts = filteredProducts
+                                .where((p) => p.category == catId)
+                                .toList();
+
+                            if (catProducts.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    8,
+                                    16,
+                                    12,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 4,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          color: isDark
+                                              ? const Color(0xFF3cad2a)
+                                              : const Color(0xFF062c6b),
+                                          borderRadius: BorderRadius.circular(
+                                            2,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        settings.t(catId).toUpperCase(),
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? const Color(0xFFf9fafb)
+                                              : const Color(0xFF1a1a1a),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Poppins',
+                                          letterSpacing: 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 260, // Fixed height for card list
+                                  child: ListView.builder(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: catProducts.length,
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        width: 180, // Fixed width for cards
+                                        margin: const EdgeInsets.only(
+                                          right: 16,
+                                          bottom: 16,
+                                        ),
+                                        child: _buildProductCard(
+                                          catProducts[index],
+                                          isDark,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
+                          })
                     else
                       GridView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -540,17 +619,19 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1a1f2e) : Colors.white,
-          borderRadius: BorderRadius.circular(24), // Softer corners
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+              color: isDark
+                  ? Colors.black.withOpacity(0.2)
+                  : const Color(0xFF062c6b).withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

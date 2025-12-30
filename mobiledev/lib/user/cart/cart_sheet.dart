@@ -47,7 +47,7 @@ class CartSheet extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'My Order',
+                    settings.t('myOrder'),
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -93,7 +93,7 @@ class CartSheet extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Your cart is empty',
+                              settings.t('cartEmpty'),
                               style: TextStyle(
                                 color: isDark
                                     ? const Color(0xFF9ca3af)
@@ -151,7 +151,9 @@ class CartSheet extends StatelessWidget {
                                         child: Center(
                                           child: Text(
                                             item['icon'] ?? '',
-                                            style: const TextStyle(fontSize: 24),
+                                            style: const TextStyle(
+                                              fontSize: 24,
+                                            ),
                                           ),
                                         ),
                                       )
@@ -247,7 +249,7 @@ class CartSheet extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Total',
+                            settings.t('total'),
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -288,7 +290,7 @@ class CartSheet extends StatelessWidget {
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text('Order Confirmed!'),
+                                    content: Text(settings.t('orderConfirmed')),
                                     backgroundColor: const Color(0xFF3cad2a),
                                     behavior: SnackBarBehavior.floating,
                                     shape: RoundedRectangleBorder(
@@ -301,15 +303,17 @@ class CartSheet extends StatelessWidget {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Failed to confirm order: $e'),
+                                    content: Text(
+                                      '${settings.t('orderConfirmError')}: $e',
+                                    ),
                                     backgroundColor: Colors.red,
                                   ),
                                 );
                               }
                             }
                           },
-                          child: const Text(
-                            'Confirm Order',
+                          child: Text(
+                            settings.t('confirmOrder'),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

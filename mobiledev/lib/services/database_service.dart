@@ -329,6 +329,16 @@ class DatabaseService {
     }
   }
 
+  Future<void> removeVoteForMeal(String mealId) async {
+    try {
+      await _upcomingRef.doc(mealId).update({
+        'voteCount': FieldValue.increment(-1),
+      });
+    } catch (e) {
+      throw Exception('Failed to remove vote: $e');
+    }
+  }
+
   // ===== HELPER METHODS =====
 
   Future<String> _uploadImage(
