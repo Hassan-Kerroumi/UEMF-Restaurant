@@ -31,7 +31,7 @@ Complete 11 categories:
 10. Dairy
 11. Snacks
 
-## 📁 Files Created/Modified
+## Files Created/Modified
 
 ### New Files:
 - **`lib/providers/app_settings_provider.dart`**
@@ -53,7 +53,7 @@ Complete 11 categories:
 - **`pubspec.yaml`**
   - Added `provider: ^6.1.1` package
 
-## 🎨 Theme Colors
+## Theme Colors
 
 ### Dark Theme (Default)
 - Background: `#0e1116`
@@ -73,7 +73,7 @@ Complete 11 categories:
 Click the sun/moon icon in the top-right corner of AdminHomeScreen
 
 ### Change Language:
-1. Click the language (🌐) icon in AppBar
+1. Click the language icon in AppBar
 2. Select from:
    - 🇬🇧 English
    - 🇫🇷 Français
@@ -82,7 +82,7 @@ Click the sun/moon icon in the top-right corner of AdminHomeScreen
 ### Browse Categories:
 Scroll horizontally through all 11 food categories with multi-language names
 
-## 🚀 Next Steps
+## Next Steps
 
 You can:
 - Run the app: `flutter run`
