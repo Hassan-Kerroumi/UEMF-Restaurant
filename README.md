@@ -1,4 +1,4 @@
-# UEMF Restaurant🍽️
+# UEMF Restaurant
 
 A comprehensive mobile application for managing and ordering from the UEMF Restaurant. This project features a dual-interface Flutter application serving both Administrators and Customers.
 
@@ -6,17 +6,17 @@ A comprehensive mobile application for managing and ordering from the UEMF Resta
 
 The solution is built with **Flutter** and serves two distinct user roles:
 
-*   **👥 User App**: allows students and staff to browse daily menus, order meals, view upcoming schedules, and manage their cart.
-*   **🛡️ Admin Panel**: empowers restaurant staff to manage products, track orders in real-time, view analytics, and update the menu.
+*   **User App**: allows students and staff to browse daily menus, order meals, view upcoming schedules, and manage their cart.
+*   **Admin Panel**: empowers restaurant staff to manage products, track orders in real-time, view analytics, and update the menu.
 
-## 📂 Repository Structure
+## Repository Structure
 
 *   **`mobiledev/`**: Contains the complete source code for the Flutter mobile application.
     *   `lib/admin/`: Admin-specific screens and logic.
     *   `lib/user/`: User-specific screens and logic.
     *   `lib/login/`: Shared authentication and routing logic.
 
-## ✨ Features
+## Features
 
 ### Admin Side
 *   **Dashboard**: View active orders and key metrics.
@@ -30,7 +30,7 @@ The solution is built with **Flutter** and serves two distinct user roles:
 *   **History**: View past orders and status.
 *   **Upcoming**: Check future menu items.
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 *   **Framework**: Flutter
 *   **Backend**: Firebase (Firestore, Storage) via `cloud_firestore` & `firebase_storage`.
@@ -38,7 +38,7 @@ The solution is built with **Flutter** and serves two distinct user roles:
 *   **Charts**: `fl_chart`
 *   **Local Storage**: `shared_preferences`
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
