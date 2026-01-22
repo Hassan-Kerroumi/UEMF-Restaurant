@@ -100,7 +100,7 @@
 
 ### Design Fidelity
 
-✅ **Colors**: Exact match from React app
+**Colors**: Exact match from React app
 - Background: `#0e1116`
 - Cards: `#1a1f2e`
 - Primary Red: `#c74242`
@@ -108,14 +108,14 @@
 - Text: `#f9fafb`
 - Muted: `#9ca3af`
 
-✅ **Typography**: Poppins font (via google_fonts)
+**Typography**: Poppins font (via google_fonts)
 - Regular (400)
 - Medium (500)
 - SemiBold (600)
 
-✅ **Spacing & Layout**: Matched padding, margins, border radius
+**Spacing & Layout**: Matched padding, margins, border radius
 
-✅ **Components**:
+**Components**:
 - Search bars
 - Category horizontal scroll
 - Cards with shadows and borders
