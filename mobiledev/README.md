@@ -141,10 +141,3 @@ lib/
 | Success | #3cad2a | #3cad2a |
 | Text | #1a1a1a | #f9fafb |
 | Muted | #6b7280 | #9ca3af |
-
-## Notes
-
-- The app currently uses mock data
-- All designs respect the original Figma/React specifications
-- Font sizes, spacing, and colors match the React version
-- Charts are responsive and interactive
