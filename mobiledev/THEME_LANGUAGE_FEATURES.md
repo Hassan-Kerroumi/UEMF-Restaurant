@@ -1,14 +1,14 @@
 # Theme & Language Features
 
-## ✅ Features Added
+## Features Added
 
-### 1. **Theme Toggle** 🌓
+### 1. **Theme Toggle**
 - Light/Dark mode switcher in AppBar
-- Icon changes: 🌙 (dark mode) ↔ ☀️ (light mode)
+- Icon changes: (dark mode) ↔  (light mode)
 - Smooth transition between themes
 - All screens adapt to selected theme
 
-### 2. **Language Switcher** 🌍
+### 2. **Language Switcher** 
 - Support for 3 languages:
   - 🇬🇧 English
   - 🇫🇷 Français
@@ -17,19 +17,19 @@
 - Check mark on selected language
 - Real-time UI updates
 
-### 3. **All Categories from React** 📋
+### 3. **All Categories from React** 
 Complete 11 categories:
-1. 🍽️ All
-2. ☕ Hot Drinks
-3. 🥤 Cold Drinks
-4. 🧁 Cakes & Desserts
-5. 🥐 Breakfast
-6. 🍕 Pizza & Pasta
-7. 🍽️ Main Dishes
-8. 🥪 Sandwiches
-9. 🥗 Salads
-10. 🥛 Dairy
-11. 🍿 Snacks
+1.  All
+2. Hot Drinks
+3. Cold Drinks
+4. Cakes & Desserts
+5. Breakfast
+6. Pizza & Pasta
+7. Main Dishes
+8. Sandwiches
+9. Salads
+10. Dairy
+11. Snacks
 
 ## 📁 Files Created/Modified
 
