@@ -5,7 +5,7 @@ The login screen serves as the entry point for the Restaurant Admin app. It hand
 
 ## Features
 
-### 🔐 Authentication
+### Authentication
 - Email/Username and Password fields
 - Form validation:
   - Email/Username: Required
@@ -13,11 +13,11 @@ The login screen serves as the entry point for the Restaurant Admin app. It hand
 - Password visibility toggle
 - Loading state during authentication
 
-### 🚦 Smart Routing
+### Smart Routing
 - **Admin Access**: If email/username contains "admin" → Routes to Admin App
 - **Regular User**: Otherwise → Routes to User App (placeholder)
 
-### 🎨 Design
+### Design
 - Matches app's dark theme color scheme
 - Responsive layout with SingleChildScrollView
 - Elegant input fields with focus states
