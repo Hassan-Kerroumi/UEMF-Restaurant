@@ -68,7 +68,7 @@ The solution is built with **Flutter** and serves two distinct user roles:
     flutter run
     ```
 
-## 🔐 Credentials (Mock/Test)
+## Credentials (Mock/Test)
 
 *   **Admin Access**:
     *   Email: `admin@restaurant.com`
