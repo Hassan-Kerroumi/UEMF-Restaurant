@@ -2,7 +2,7 @@
 
 A comprehensive mobile application for managing and ordering from the UEMF Restaurant. This project features a dual-interface Flutter application serving both Administrators and Customers.
 
-## 📱 Project Overview
+## Project Overview
 
 The solution is built with **Flutter** and serves two distinct user roles:
 
