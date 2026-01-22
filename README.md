@@ -78,7 +78,7 @@ The solution is built with **Flutter** and serves two distinct user roles:
     *   Email: `user@restaurant.com`
     *   Password: `123456`
 
-## 📄 Documentation
+## Documentation
 
 For more detailed documentation on specific modules, refer to the docs inside the `mobiledev` folder:
 *   [Admin App Analysis](mobiledev/ADMIN_APP_ANALYSIS.md)
